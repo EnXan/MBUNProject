@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_fridge"
+        android:enabled="true"
+        android:icon="@drawable/outline_kitchen_24"
+        android:title="Kühlschrank" />
+    <item
+        android:id="@+id/nav_routines"
+        android:enabled="true"
+        android:icon="@drawable/routines"
+        android:title="Routinen" />
+    <item
+        android:id="@+id/nav_recipes"
+        android:enabled="true"
+        android:icon="@drawable/receipt"
+        android:title="Rezepte" />
+</menu>

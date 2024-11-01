@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App-Thema für den hellen Modus -->
+    <style name="Theme.ProjektMBUN" parent="android:Theme.Material.Light.NoActionBar" />
+
+
+</resources>

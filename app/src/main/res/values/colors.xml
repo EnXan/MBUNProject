@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#39693B</color>
+    <color name="primary_button_light_background">#659B65</color>
+    <color name="primary_button_dark_background">#002106</color>
+    <color name="secondary">#526350</color>
+    <color name="tertiary">#001F23</color>
+    <color name="tertiary_button_background">#39656B</color>
+    <color name="tertiary_light_fade">#39656B</color>
+    <color name="tertiary_dark_fade">#274346</color>
+    <color name="tertiary_text">#39656B</color>
+    <color name="primary_light_dark_fade">#39693B</color>
+    <color name="primary_dark_dark_fade">#1F4A21</color>
+    <color name="primary_light_light_fade">#63B166</color>
+    <color name="primary_dark_light_fade">#4E8751</color>
+    <color name="text_light">#D5E8CF</color>
+    <color name="text_background">#75A671</color>
+    <color name="input_background">#EEEEEE</color>
+    <color name="input_text">#686868</color>
+    <color name="input_icons">#5A585E</color>
+    <color name="menu_items">#1C1B1F</color>
+    <color name="bookmark">#FFBB00</color>
+    <color name="close">#EA6668</color>
+    <color name="success">#22bb33</color>
+    <color name="danger">#bb2124</color>
+    <color name="warning">#f0ad4e</color>
+    <color name="black">#1C1B1F</color>
+    <color name="black_border">#DCDCDC</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
