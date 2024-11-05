@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.projektmbun.R
 
-class FridgeFragment : Fragment() {
+class MenuFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Layout für dieses Fragment festlegen
-        return inflater.inflate(R.layout.fragment_fridge, container, false)
+        return inflater.inflate(R.layout.fragment_menu, container, false)
     }
 }

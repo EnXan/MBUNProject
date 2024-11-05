@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:clipToPadding="false"
+    android:paddingHorizontal="26dp"
+    android:gravity="center_horizontal"
+
+    android:paddingTop="50dp">
+
+    <!-- Oberes Layout mit Text und Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mein_vorrat"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="20sp"
+            android:textColor="@color/black" />
+
+        <Button
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="3dp"
+            android:text="0"
+            android:textColor="@color/pure_white"
+            android:textSize="20sp"
+            android:background="@drawable/btn_count_items_teal" />
+    </LinearLayout>
+
+
+    <!-- Suchleiste unter dem oberen Layout -->
+    <include
+        layout="@layout/searchbar" />
+
+    <!-- Layout mit Schaltflächen und Abständen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <!-- Erstes Button-Text-Paar -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginRight="18dp">
+
+            <Button
+                android:id="@+id/gemuese_filter"
+                android:layout_width="60dp"
+                android:layout_height="50dp"
+                android:background="@drawable/btn_use_filter"
+                android:text="🥕"
+                android:textSize="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gemüse"
+                android:gravity="center"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+
+        <!-- Zweites Button-Text-Paar -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginRight="18dp">
+
+            <Button
+                android:id="@+id/obst_filter"
+                android:layout_width="60dp"
+                android:layout_height="50dp"
+                android:background="@drawable/btn_use_filter"
+                android:text="🍎"
+                android:textSize="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Obst"
+                android:gravity="center"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+
+        <!-- Drittes Button-Text-Paar -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginRight="18dp">
+
+            <Button
+                android:id="@+id/fleisch_filter"
+                android:layout_width="60dp"
+                android:layout_height="50dp"
+                android:background="@drawable/btn_use_filter"
+                android:text="🍗"
+                android:textSize="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fleisch"
+                android:gravity="center"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+
+        <!-- Viertes Button-Text-Paar -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/getreide_filter"
+                android:layout_width="60dp"
+                android:layout_height="50dp"
+                android:background="@drawable/btn_use_filter"
+                android:text="🌾"
+                android:textSize="24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Getreide"
+                android:gravity="center"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="20dp"
+        android:id="@+id/food_view"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>

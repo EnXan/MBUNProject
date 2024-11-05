@@ -1,11 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
 android {
     namespace = "com.example.projektmbun"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.projektmbun"
@@ -29,6 +30,8 @@ android {
             )
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -50,9 +53,19 @@ android {
 }
 
 dependencies {
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.kotlinx.coroutines.android)
+    implementation (libs.androidx.room.ktx)
+    testImplementation(libs.junit.jupiter)
+    ksp(libs.androidx.room.compiler)
+    androidTestImplementation (libs.androidx.room.testing)
+    testImplementation(libs.kotlin.test.junit)
+    implementation (libs.androidx.emoji2)
+    implementation (libs.androidx.emoji2.bundled)
     implementation (libs.material)
+    testImplementation(libs.turbine)
+    implementation (libs.fab)
     implementation(libs.androidx.appcompat)
-    val cameraxVersion = "1.2.2"
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
@@ -68,11 +81,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    testImplementation (libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.mockito.android)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

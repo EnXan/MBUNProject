@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_fridge"
+        android:id="@+id/nav_home"
         android:enabled="true"
-        android:icon="@drawable/outline_kitchen_24"
-        android:title="Kühlschrank" />
+        android:icon="@drawable/ic_home_black"
+        android:title="Home" />
+    <item
+        android:id="@+id/nav_stock"
+        android:enabled="true"
+        android:icon="@drawable/ic_stock_black"
+        android:title="Vorrat" />
     <item
         android:id="@+id/nav_routines"
         android:enabled="true"
-        android:icon="@drawable/routines"
+        android:icon="@drawable/ic_routines_black"
         android:title="Routinen" />
     <item
         android:id="@+id/nav_recipes"
         android:enabled="true"
-        android:icon="@drawable/receipt"
+        android:icon="@drawable/ic_receipt_black"
         android:title="Rezepte" />
 </menu>

@@ -1,30 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#39693B</color>
-    <color name="primary_button_light_background">#659B65</color>
-    <color name="primary_button_dark_background">#002106</color>
-    <color name="secondary">#526350</color>
-    <color name="tertiary">#001F23</color>
-    <color name="tertiary_button_background">#39656B</color>
-    <color name="tertiary_light_fade">#39656B</color>
-    <color name="tertiary_dark_fade">#274346</color>
-    <color name="tertiary_text">#39656B</color>
-    <color name="primary_light_dark_fade">#39693B</color>
-    <color name="primary_dark_dark_fade">#1F4A21</color>
-    <color name="primary_light_light_fade">#63B166</color>
-    <color name="primary_dark_light_fade">#4E8751</color>
-    <color name="text_light">#D5E8CF</color>
+    <color name="primary_green">#39693B</color>
+    <color name="primary_green_light">#659B65</color>
+    <color name="primary_green_dark">#002106</color>
+
+    <color name="secondary_green">#526350</color>
+
+    <color name="tertiary_teal">#001F23</color>
+    <color name="tertiary_teal_light">#39656B</color>
+    <color name="tertiary_teal_dark">#274346</color>
+    <color name="tertiary_teal_text">#39656B</color>
+
+    <color name="primary_fade_light">#39693B</color>
+    <color name="primary_fade_dark">#2B4E2C</color>
+    <color name="primary_fade_darker">#1F4A21</color>
+    <color name="primary_accent_light">#63B166</color>
+    <color name="primary_accent_dark">#4E8751</color>
+
+    <color name="text_foreground_light">#D5E8CF</color>
+    <color name="text_background_light">#ABCFA8</color>
     <color name="text_background">#75A671</color>
-    <color name="input_background">#EEEEEE</color>
-    <color name="input_text">#686868</color>
-    <color name="input_icons">#5A585E</color>
-    <color name="menu_items">#1C1B1F</color>
-    <color name="bookmark">#FFBB00</color>
-    <color name="close">#EA6668</color>
-    <color name="success">#22bb33</color>
-    <color name="danger">#bb2124</color>
-    <color name="warning">#f0ad4e</color>
+
+    <color name="input_background_gray">#EEEEEE</color>
+    <color name="input_text_gray">#686868</color>
+    <color name="input_icons_gray">#5A585E</color>
+
+    <color name="menu_text">#1C1B1F</color>
+    <color name="highlight_yellow">#FFBB00</color>
+    <color name="close_red">#EA6668</color>
+
+    <color name="status_success">#22bb33</color>
+    <color name="status_danger">#bb2124</color>
+    <color name="status_warning">#f0ad4e</color>
+
+    <color name="green_dark">#002106</color>
     <color name="black">#1C1B1F</color>
-    <color name="black_border">#DCDCDC</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="border_gray">#DCDCDC</color>
+
+    <color name="background_light">#F6F6F6</color>
+    <color name="shadow_black_translucent">#40000000</color>
+    <color name="pure_white">#FFFFFFFF</color>
+    <color name="pure_black">#00000000</color>
 </resources>

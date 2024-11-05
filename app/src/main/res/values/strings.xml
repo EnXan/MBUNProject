@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">CameraXApp</string>
+    <string name="app_name">ZeroWasteCook</string>
     <string name="haltbarkeit">Haltbarkeit</string>
     <string name="lebensmittel">Lebensmittel</string>
     <string name="routinen">Routinen</string>
     <string name="rezepte">Rezepte</string>
     <string name="rhythmus_platzhalter">Rhythmus auswählen</string>
     <string name="hinweis_lebensmittel">Füge Lebensmittel
-        zu deinem Kühlschrank hinzu die du zu Hause hast.
+        zu deinem Vorrat hinzu die du zu Hause hast.
         Gib jeweils die Menge und optional das Haltbarkeitsdatum an.
     </string>
     <string name="hinweis_routinen">Routinen ermöglichen das automatische
@@ -21,12 +21,14 @@
     </string>
     <string name="platzhalter_haltbarkeit">Haltbar bis</string>
     <string name="meine_routinen">Meine Routinen</string>
-    <string name="mein_kühlschrank">Mein Kühlschrank</string>
+    <string name="mein_vorrat">Mein Vorrat</string>
     <string name="lebensmittel_hinzufügen">Lebensmittel hinzufügen</string>
     <string name="lebensmittel_hinzufügen_suche">Füge ein Lebensmittel hinzu...</string>
     <string name="routine_hinzufügen_suche">Füge eine Routine hinzu...</string>
     <string name="rezepte_suchen">Suche nach Rezepten...</string>
-    <string name="leerer_kühlschrank">Dein Kühlschrank sieht leer aus</string>
+    <string name="leerer_vorrat">Dein Vorrat sieht leer aus</string>
     <string name="leere_haltbarkeit">Keine Lebensmittel gefunden</string>
     <string name="leere_routine">Keine Routine gefunden</string>
+    <string name="add_item">add item</string>
+    <string name="quantity_text">%1$d g</string>
 </resources>
