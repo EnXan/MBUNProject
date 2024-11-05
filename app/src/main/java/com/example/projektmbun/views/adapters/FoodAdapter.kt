@@ -17,6 +17,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+/*
+TODO: Wrapper Klasse für food mit expDate und Quantity.
+Klasse wird dann direkt in foodList gespeichert -> zusätzliche Maps werden vermieden
+ */
+
 /**
  * Adapter class for displaying a list of Food items in a RecyclerView.
  *
@@ -59,6 +64,15 @@ class FoodAdapter(
      * @param holder The ViewHolder to be updated with the data.
      * @param position The position of the item within the adapter's data set.
      */
+
+    private val quantityMap = mutableMapOf<Int, Int>()
+        get() = field
+
+    fun resetQuantityMap() {
+        quantityMap.clear()
+        notifyDataSetChanged()
+    }
+
     override fun onBindViewHolder(holder: FoodViewHolder, position: Int) {
         val food = foodList[position]
         if (food == null) {
@@ -89,33 +103,29 @@ class FoodAdapter(
             }
         }
 
-        // Set up the number picker dialog on the quantity button
+        // Load quantity from map or use default (100g if not set)
+        val quantity = quantityMap[position] ?: 100
+        holder.btnSelectQuantity.text = "$quantity g"
+
         holder.btnSelectQuantity.setOnClickListener {
-            try {
-                // array with values in steps of 25
-                val displayedValues = Array(41) { i -> "${i * 25} g" }
-
-                val numberPicker = NumberPicker(context).apply {
-                    minValue = 0
-                    maxValue = displayedValues.size - 1
-                    value = 4 // Standardwert entspricht 100 g
-                    wrapSelectorWheel = false
-                    setDisplayedValues(displayedValues)
-                }
-
-                AlertDialog.Builder(context)
-                    .setTitle("Menge auswählen")
-                    .setView(numberPicker)
-                    .setPositiveButton("OK") { _, _ ->
-                        val selectedValue = numberPicker.value * 25
-                        val quantityText = context.getString(R.string.quantity_text, selectedValue)
-                        holder.btnSelectQuantity.text = quantityText
-                    }
-                    .setNegativeButton("Abbrechen", null)
-                    .show()
-            } catch (e: Exception) {
-                Log.e("FoodAdapter", "Error in NumberPicker dialog: ${e.message}")
+            val displayedValues = Array(41) { i -> "${i * 25} g" }
+            val numberPicker = NumberPicker(context).apply {
+                minValue = 0
+                maxValue = displayedValues.size - 1
+                value = quantity / 25 // set initial value based on saved quantity
+                setDisplayedValues(displayedValues)
             }
+
+            AlertDialog.Builder(context)
+                .setTitle("Menge auswählen")
+                .setView(numberPicker)
+                .setPositiveButton("OK") { _, _ ->
+                    val selectedValue = numberPicker.value * 25
+                    quantityMap[position] = selectedValue // save selected quantity for this position
+                    holder.btnSelectQuantity.text = "$selectedValue g"
+                }
+                .setNegativeButton("Abbrechen", null)
+                .show()
         }
 
     }

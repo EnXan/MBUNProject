@@ -16,6 +16,7 @@ class FoodController(private val foodDao: FoodDao) {
      * Add or update a new food entry to the database.
      * @param food name of the related food.
      */
+    @Deprecated("Brauche ich eigentlich nicht!")
     suspend fun addFood(food: Food) {
         if (food.food.isEmpty() || food.food.isBlank()) {
             throw IllegalArgumentException("food name can't be empty or blank!")
@@ -35,6 +36,7 @@ class FoodController(private val foodDao: FoodDao) {
      * Deletes a food entry from the database by its name.
      * @param food name of the food.
      */
+    @Deprecated("Brauche ich eigentlich nicht!")
     suspend fun deleteFood(food: Food) {
         withContext(Dispatchers.IO) {
             try {

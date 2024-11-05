@@ -154,6 +154,7 @@ class StockFragment : Fragment() {
             // Update selection and apply category filter
             setSelectedButton(button)
             currentCategory = category
+            foodAdapter.resetQuantityMap()
         }
         applyFilters()
     }

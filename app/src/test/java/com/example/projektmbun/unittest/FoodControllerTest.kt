@@ -33,6 +33,9 @@ class FoodControllerTest {
     private lateinit var mockDao: FoodDao
     private lateinit var foodItem: Food
 
+    /**
+     * Setting up mocks for foodController and foodDao
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
@@ -48,58 +51,6 @@ class FoodControllerTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain() // Reset main dispatcher to the original Main dispatcher
-    }
-
-
-    @Test
-    fun testAddFoodItem() = runBlocking {
-        // Act
-        foodController.addFood(foodItem)
-
-        // Assert: Verify `createOrReplaceFood` was called exactly once with the correct argument
-        verify(mockDao, times(1)).createOrReplaceFood(foodItem)
-    }
-
-    @Test
-    fun testAddFoodItemTwice() = runBlocking {
-        foodController.addFood(foodItem)
-        foodController.addFood(foodItem)
-
-        verify(mockDao, times(2)).createOrReplaceFood(foodItem)
-
-        `when`(mockDao.getAllFood()).thenReturn(flowOf(listOf(foodItem)))
-
-        val allFoods = foodController.getAllFood()
-
-        allFoods.collect { foods ->
-            assertEquals(1, foods.size)
-            assertEquals("Apfel", foods[0].food)
-        }
-    }
-
-    @Test
-    fun testAddFoodItemRunsOnIoDispatcher() = runTest {
-        val foodItem = Food("Apfel", FoodCategoryEnum.OBST)
-
-        foodController.addFood(foodItem)
-
-        verify(mockDao).createOrReplaceFood(foodItem) // Ensure the method was called
-    }
-
-    @Test
-    fun testAddEmptyFoodItem() {
-        runBlocking {
-            val emptyFoodItem = Food("", FoodCategoryEnum.OBST)
-            assertFailsWith<IllegalArgumentException> {
-                foodController.addFood(emptyFoodItem)
-            }
-        }
-    }
-
-    @Test(expected = SQLException::class)
-    fun testAddFoodWithDatabaseError() = runBlocking {
-        Mockito.`when`(mockDao.createOrReplaceFood(foodItem)).thenThrow(SQLException("Simulierter Datenbankfehler"))
-        foodController.addFood(foodItem)
     }
 
 
