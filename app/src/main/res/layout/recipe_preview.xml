@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/recipe_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="350dp"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    android:background="@drawable/bg_receipe_preview">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Bild oben anzeigen -->
+        <ImageView
+            android:id="@+id/recipeImageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeolder_receipt" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingHorizontal="15dp"
+            android:paddingBottom="15dp">
+        <!-- Titel darunter anzeigen -->
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="match_parent"
+            android:text="Bananenbrot"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:padding="2dp"
+            android:textColor="@android:color/black" />
+
+        <!-- Ernährung darunter anzeigen -->
+        <TextView
+            android:id="@+id/nutritionTextView"
+            android:layout_width="wrap_content"
+            android:text="Ernährung"
+            android:layout_height="wrap_content"
+            android:background="@drawable/food_card_background"
+            android:textSize="15sp"
+            android:drawableLeft="@drawable/ic_vegetarian"
+            android:drawablePadding="5dp"
+            android:textStyle="normal"
+            android:paddingVertical="3dp"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/text_foreground_light" />
+
+        <!-- Beschreibung darunter anzeigen -->
+        <TextView
+            android:id="@+id/descriptionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:layout_marginTop="1dp"
+            android:text="Beschreibung..."
+            android:textSize="13sp"
+            android:textColor="@android:color/black"
+            />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="end"
+                >
+                <TextView
+                    android:id="@+id/recipe_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="50dp"
+                    android:drawableLeft="@drawable/ic_time_small"
+                    android:drawablePadding="5dp"
+                    android:fontFamily="sans-serif-light"
+                    android:paddingHorizontal="10dp"
+                    android:textSize="12dp"
+                    android:paddingVertical="4dp"
+                    android:text="Dauer"
+                    android:textColor="@color/pure_white"
+                    android:background="@drawable/bg_recipe_keywords"
+                    android:layout_marginEnd="10dp"
+                    />
+                <TextView
+                    android:id="@+id/recipe_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="50dp"
+                    android:drawableLeft="@drawable/ic_mahlzeit_small"
+                    android:drawablePadding="5dp"
+                    android:fontFamily="sans-serif-light"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:textSize="12dp"
+                    android:text="Zeit"
+                    android:textColor="@color/pure_white"
+                    android:background="@drawable/bg_recipe_keywords"
+                    android:layout_marginEnd="10dp"
+                    />
+
+                <TextView
+                    android:id="@+id/recipe_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="50dp"
+                    android:drawableLeft="@drawable/ic_money_small"
+                    android:drawablePadding="5dp"
+                    android:fontFamily="sans-serif-light"
+                    android:textSize="12dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="Preis"
+                    android:textColor="@color/pure_white"
+                    android:background="@drawable/bg_recipe_keywords"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

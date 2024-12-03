@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/initialFragment">
+
+    <!-- Placeholder Initial Fragment -->
+    <fragment
+        android:id="@+id/initialFragment"
+        android:name="com.example.projektmbun.views.fragments.InitialFragment"
+        tools:layout="@layout/fragment_initial">
+        <action
+            android:id="@+id/action_initialFragment_to_menuFragment"
+            app:destination="@id/fragment_menu"/>
+    </fragment>
+
+    <!-- Menu Fragment -->
+    <fragment
+        android:id="@+id/fragment_menu"
+        android:label="Menu Fragment"
+        android:name="com.example.projektmbun.views.fragments.MenuFragment"
+        tools:layout="@layout/fragment_menu">
+        <action
+            android:id="@+id/action_menu_fragment_to_stock_fragment"
+            app:destination="@id/fragment_stock"/>
+        <action
+            android:id="@+id/action_fragment_menu_to_fragment_stock_list"
+            app:destination="@id/fragment_stock_list"/>
+        <action
+            android:id="@+id/action_fragment_menu_to_fragment_routine"
+            app:destination="@id/fragment_routine" />
+    </fragment>
+
+    <!-- Stock Fragment -->
+    <fragment
+        android:id="@+id/fragment_stock"
+        android:label="Stock Fragment"
+        android:name="com.example.projektmbun.views.fragments.StockFragment"
+        tools:layout="@layout/fragment_stock">
+        <argument
+            android:name="routineId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
+            android:name="showFinishButton"
+            app:argType="boolean"
+            android:defaultValue="false"
+            />
+        <action
+            android:id="@+id/action_stock_fragment_to_stock_list_fragment"
+            app:destination="@id/fragment_stock_list"/>
+        <action
+            android:id="@+id/action_fragment_stock_to_fragment_routine"
+            app:destination="@id/fragment_routine" />
+    </fragment>
+
+    <!-- Recipes Fragment -->
+    <fragment
+        android:id="@+id/fragment_recipes"
+        android:label="Recipes Fragment"
+        android:name="com.example.projektmbun.views.fragments.RecipesFragment"
+        tools:layout="@layout/fragment_recipes">
+        <action
+            android:id="@+id/action_recipes_fragment_to_recipe_details_fragment"
+            app:destination="@id/fragment_recipe_details"/>
+    </fragment>
+
+    <!-- Additional Fragments -->
+    <fragment
+        android:id="@+id/fragment_routine"
+        tools:layout="@layout/fragment_routines"
+        android:name="com.example.projektmbun.views.fragments.RoutinesFragment" >
+        <action
+            android:id="@+id/action_fragment_routine_to_fragment_stock"
+            app:destination="@id/fragment_stock" />
+        <action
+            android:id="@+id/action_fragment_routine_to_fragment_menu"
+            app:destination="@id/fragment_menu" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_recipe_details"
+        tools:layout="@layout/fragment_recipe_details"
+        android:name="com.example.projektmbun.views.fragments.RecipeDetailsFragment"/>
+
+    <!-- Stock List Fragment with Back Action to Menu -->
+    <fragment
+        android:id="@+id/fragment_stock_list"
+        tools:layout="@layout/fragment_stock_list"
+        android:name="com.example.projektmbun.views.fragments.StockListFragment">
+        <action
+            android:id="@+id/action_fragment_stock_list_to_fragment_menu"
+            app:destination="@id/fragment_menu"/>
+    </fragment>
+</navigation>

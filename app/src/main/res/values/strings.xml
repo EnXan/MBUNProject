@@ -2,7 +2,11 @@
     <string name="app_name">ZeroWasteCook</string>
     <string name="haltbarkeit">Haltbarkeit</string>
     <string name="lebensmittel">Lebensmittel</string>
+    <string name="nicht_gefunden">Nicht gefunden</string>
+    <string name="menu">Home</string>
+    <string name="vorrat">Vorrat</string>
     <string name="routinen">Routinen</string>
+    <string name="placeholder_expiryDate">Haltbar bis</string>
     <string name="rezepte">Rezepte</string>
     <string name="rhythmus_platzhalter">Rhythmus auswählen</string>
     <string name="hinweis_lebensmittel">Füge Lebensmittel
@@ -31,4 +35,5 @@
     <string name="leere_routine">Keine Routine gefunden</string>
     <string name="add_item">add item</string>
     <string name="quantity_text">%1$d g</string>
+    <string name="rhythm_placeholder">Rhythmus auswählen</string>
 </resources>

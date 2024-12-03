@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
-<ScrollView
+<androidx.core.widget.NestedScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -44,6 +44,7 @@
             android:layout_marginBottom="8dp">
 
             <TextView
+                android:id="@+id/mein_vorrat_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/mein_vorrat"
@@ -51,8 +52,19 @@
                 android:textStyle="bold"
                 android:textSize="16sp" />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/stock_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_below="@id/mein_vorrat_text"
+                android:layout_marginTop="8dp"
+                android:scrollbars="vertical"
+                android:nestedScrollingEnabled="true"/>
+
+
             <TextView
                 android:id="@+id/empty_fridge_text"
+                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/leerer_vorrat"
@@ -64,6 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="👀"
+                android:visibility="gone"
                 android:textSize="38sp"
                 android:layout_centerHorizontal="true"
                 android:layout_above="@id/empty_fridge_text"
@@ -79,9 +92,9 @@
                 android:text="@string/lebensmittel_hinzufügen"
                 android:textAllCaps="false"
                 android:textColor="@color/pure_white"
-                android:fontFamily="sans-serif"
-                />
+                android:fontFamily="sans-serif" />
         </RelativeLayout>
+
 
         <!-- "Haltbarkeit" and "Meine Routinen" Cards -->
         <LinearLayout
@@ -99,10 +112,11 @@
                 android:elevation="10dp"
                 android:layout_height="250dp"
                 android:background="@drawable/card_background"
-                android:padding="16dp"
+                android:padding="10dp"
                 android:layout_marginBottom="8dp">
 
                 <TextView
+                    android:id="@+id/meine_haltbarkeit_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/haltbarkeit"
@@ -110,10 +124,20 @@
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/expiry_date_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_below="@id/meine_haltbarkeit_text"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="vertical"
+                    android:nestedScrollingEnabled="true"/>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/leere_haltbarkeit"
+                    android:visibility="gone"
                     android:textAlignment="center"
                     android:textColor="@color/text_background"
                     android:layout_centerHorizontal="true"
@@ -126,11 +150,12 @@
                 android:layout_weight="1"
                 android:layout_height="250dp"
                 android:background="@drawable/card_background"
-                android:padding="16dp"
+                android:padding="10dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="8dp">
 
                 <TextView
+                    android:id="@+id/meine_routinen_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/meine_routinen"
@@ -138,11 +163,21 @@
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/routine_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_below="@id/meine_routinen_text"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="vertical"
+                    android:nestedScrollingEnabled="true"/>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/leere_routine"
                     android:textAlignment="center"
+                    android:visibility="gone"
                     android:textColor="@color/text_background"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true" />
@@ -150,7 +185,7 @@
         </LinearLayout>
     </LinearLayout>
 
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
 
 
     <com.github.clans.fab.FloatingActionMenu

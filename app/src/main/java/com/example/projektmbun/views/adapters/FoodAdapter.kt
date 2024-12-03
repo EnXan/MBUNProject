@@ -1,174 +1,284 @@
 package com.example.projektmbun.views.adapters
 
-import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
+import android.database.sqlite.SQLiteException
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.NumberPicker
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
-import com.example.projektmbun.models.data.Food
-import java.text.SimpleDateFormat
+import com.example.projektmbun.controller.RoutineController
+import com.example.projektmbun.controller.StockController
+import com.example.projektmbun.databinding.ItemFoodBinding
+import com.example.projektmbun.models.daos.FoodCardDao
+import com.example.projektmbun.models.daos.RoutineDao
+import com.example.projektmbun.models.daos.StockDao
+import com.example.projektmbun.models.data.food.Food
+import com.example.projektmbun.models.data.food_card.FoodCard
+import com.example.projektmbun.utils.enums.FoodStateEnum
+import com.example.projektmbun.utils.enums.FoodCardStateEnum
+import com.example.projektmbun.models.database.AppDatabase
+import com.example.projektmbun.utils.Converters
+import com.example.projektmbun.utils.animations.Animations
+import com.example.projektmbun.views.fragments.DatePickerFragment
+import com.example.projektmbun.views.fragments.QuantityPickerFragment
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Locale
-
-/*
-TODO: Wrapper Klasse für food mit expDate und Quantity.
-Klasse wird dann direkt in foodList gespeichert -> zusätzliche Maps werden vermieden
- */
 
 /**
- * Adapter class for displaying a list of Food items in a RecyclerView.
+ * Data class to hold the selected date and quantity for a food item.
+ * This serves as a temporary data model for food items in the `FoodAdapter`.
  *
- * @param foodList List of Food items to display.
- * @param context Context used to initialize dialogs and access resources.
+ * @property selectedDate The selected expiration date for the food item.
+ * @property quantity The selected quantity of the food item.
  */
-class FoodAdapter(
-    private var foodList: List<Food?>,
-    private val context: Context
-) : RecyclerView.Adapter<FoodAdapter.FoodViewHolder>() {
+data class SelectedFoodHolder(val selectedDate: String? = null, val quantity: String? = null)
+
+/**
+ * RecyclerView Adapter for displaying food items in the FoodFragment.
+ * Each food item has an option for setting an expiration date and a quantity using date and quantity pickers.
+ *
+ * @constructor Creates a FoodAdapter with a given set of food items.
+ * @param foodSet Array of Food objects to display in the RecyclerView.
+ */
+class FoodAdapter(private var foodSet: List<Food>,
+                  context: Context,
+                  private val showFinishButton: Boolean,
+                  private val routineId: Int?,
+                  private val stockId: Int?
+    ) :
+    RecyclerView.Adapter<FoodAdapter.ViewHolder>() {
 
     /**
-     * ViewHolder class that holds references to the UI components in each item view.
-     *
-     * @param itemView The root view of the item layout.
+     * A map to store the selected date and quantity for each food item.
+     * The key is the food name, and the value is an instance of SelectedFoodHolder.
      */
-    inner class FoodViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val foodName: TextView = itemView.findViewById(R.id.foodTitle)
-        val foodCategory: TextView = itemView.findViewById(R.id.foodCategory)
-        val btnSelectDate: Button = itemView.findViewById(R.id.btn_select_date)
-        val btnSelectQuantity: Button = itemView.findViewById(R.id.btn_select_menge)
-    }
+    private val selectedFoodMap = mutableMapOf<String, SelectedFoodHolder>()
+
+    //All DAOs needed
+    private var foodCardDao: FoodCardDao = AppDatabase.getDatabase(context).foodCardDao()
+    private var routineDao: RoutineDao = AppDatabase.getDatabase(context).routineDao()
+    private var stockDao: StockDao = AppDatabase.getDatabase(context).stockDao()
+
+    //All controllers needed
+    private var stockController: StockController = StockController(stockDao, foodCardDao)
+    private var routineController: RoutineController = RoutineController(routineDao, foodCardDao)
 
     /**
-     * Called when RecyclerView needs a new ViewHolder of the given type to represent an item.
+     * ViewHolder class for the FoodAdapter.
+     * Holds references to the views for each item without binding data yet.
      *
-     * @param parent The parent ViewGroup into which the new view will be added.
-     * @param viewType The view type of the new View.
-     * @return A new FoodViewHolder holding the view for each item.
+     * @property binding The view binding for each item in the RecyclerView.
      */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FoodViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_food, parent, false)
-        return FoodViewHolder(view)
-    }
+    inner class ViewHolder(private val binding: ItemFoodBinding) : RecyclerView.ViewHolder(binding.root) {
 
-    /**
-     * Called by RecyclerView to display the data at the specified position.
-     *
-     * @param holder The ViewHolder to be updated with the data.
-     * @param position The position of the item within the adapter's data set.
-     */
+        private var foodTitleText: TextView = binding.foodTitle
+        private var foodCategoryText: TextView = binding.foodCategory
+        private var selectDateButton: Button = binding.btnSelectDate
+        private var selectQuantityButton: Button = binding.btnSelectQuantity
+        private var addToStockButton: ImageButton = binding.btnAddToStock
+        /**
+         * Binds the food item data to the views, and sets up listeners for the date and quantity selectors.
+         *
+         * @param food The food item being bound to this ViewHolder.
+         * @param dataHolder Holds the selected date and quantity for the food item.
+         * @param onDataUpdated Callback function for updating selected date and quantity in the adapter.
+         */
+        fun bind(
+            food: Food,
+            dataHolder: SelectedFoodHolder?,
+            onDataUpdated: (String, (SelectedFoodHolder) -> SelectedFoodHolder) -> Unit,
+            routineController: RoutineController,
+        ) {
 
-    private val quantityMap = mutableMapOf<Int, Int>()
-        get() = field
+            val foodName = food.name
+            val foodCategory = food.category
+            val foodState = food.state
 
-    fun resetQuantityMap() {
-        quantityMap.clear()
-        notifyDataSetChanged()
-    }
+            var selectedDate = dataHolder?.selectedDate
+            var selectedQuantity = dataHolder?.quantity
+                ?: if (foodState == FoodStateEnum.LIQUID) "100 ml"
+                else if (foodState == FoodStateEnum.PIECE) "1"
+                else "100 g"
 
-    override fun onBindViewHolder(holder: FoodViewHolder, position: Int) {
-        val food = foodList[position]
-        if (food == null) {
-            Log.e("FoodAdapter", "Food item at position $position is null")
-        }
-        holder.foodName.text = food?.food ?: "Unknown food name"
-        holder.foodCategory.text = convertCategory(food?.category?.name ?: "Unknown category")
 
-        // Set up the date picker dialog on the button
-        holder.btnSelectDate.setOnClickListener {
-            try {
-                val calendar = Calendar.getInstance()
-                val datePickerDialog = DatePickerDialog(
-                    context,
-                    { _, year, month, dayOfMonth ->
-                        calendar.set(year, month, dayOfMonth)
-                        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-                        holder.btnSelectDate.text =
-                            dateFormat.format(calendar.time)
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                )
-                datePickerDialog.show()
-            } catch (e: Exception) {
-                Log.e("FoodAdapter", "Error opening DatePickerDialog: ${e.message}")
-            }
-        }
 
-        // Load quantity from map or use default (100g if not set)
-        val quantity = quantityMap[position] ?: 100
-        holder.btnSelectQuantity.text = "$quantity g"
+            selectDateButton.text = selectedDate ?: itemView.context.getString(R.string.placeholder_expiryDate)
+            selectDateButton.visibility = if (showFinishButton) View.GONE else View.VISIBLE
 
-        holder.btnSelectQuantity.setOnClickListener {
-            val displayedValues = Array(41) { i -> "${i * 25} g" }
-            val numberPicker = NumberPicker(context).apply {
-                minValue = 0
-                maxValue = displayedValues.size - 1
-                value = quantity / 25 // set initial value based on saved quantity
-                setDisplayedValues(displayedValues)
+            selectQuantityButton.text = when (food.state) {
+                FoodStateEnum.LIQUID -> "100 ml"
+                FoodStateEnum.SOLID -> "100 g"
+                FoodStateEnum.ALL -> "100 g"
+                FoodStateEnum.PIECE -> "1"
             }
 
-            AlertDialog.Builder(context)
-                .setTitle("Menge auswählen")
-                .setView(numberPicker)
-                .setPositiveButton("OK") { _, _ ->
-                    val selectedValue = numberPicker.value * 25
-                    quantityMap[position] = selectedValue // save selected quantity for this position
-                    holder.btnSelectQuantity.text = "$selectedValue g"
+            foodTitleText.text = foodName
+            foodCategoryText.text = Converters.getCategoryTextFromEnum(foodCategory)
+
+
+
+            selectDateButton.setOnClickListener {
+                val fragmentManager = (itemView.context as? AppCompatActivity)?.supportFragmentManager
+
+                if (fragmentManager != null) {
+                    val selectedDateParts = selectedDate?.split(".") ?: listOf("", "", "")
+                    val lastDay = selectedDateParts.getOrNull(0)?.toIntOrNull() ?: Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                    val lastMonth = (selectedDateParts.getOrNull(1)?.toIntOrNull()?.minus(1)) ?: Calendar.getInstance().get(Calendar.MONTH)
+                    val lastYear = selectedDateParts.getOrNull(2)?.toIntOrNull() ?: Calendar.getInstance().get(Calendar.YEAR)
+
+
+                    val datePickerFragment = DatePickerFragment(
+                        listener = { year, month, day ->
+                            selectedDate = "$day.${month + 1}.$year"
+                            selectDateButton.text = selectedDate
+
+                            // Update selected date in the adapter
+                            onDataUpdated(food.name) { currentHolder ->
+                                currentHolder.copy(selectedDate = selectedDate)
+                            }
+                        },
+                        defaultYear = lastYear,
+                        defaultMonth = lastMonth,
+                        defaultDay = lastDay
+                    )
+                    datePickerFragment.show(fragmentManager, "datePicker")
                 }
-                .setNegativeButton("Abbrechen", null)
-                .show()
-        }
+            }
 
+
+            selectQuantityButton.setOnClickListener {
+                val fragmentManager = (itemView.context as? AppCompatActivity)?.supportFragmentManager
+
+                if (fragmentManager != null) {
+                    val initialQuantityString = selectedQuantity // Aktueller Wert aus dem Button-Text
+                    Log.d("FoodAdapter", "Initial Quantity: $initialQuantityString")
+                    val quantityPickerFragment = QuantityPickerFragment(
+                        listener = { quantity, unit ->
+                            val newQuantity = when {
+                                unit.isNullOrBlank() || unit == "-" -> "${quantity?.toInt()}"
+                                else -> "$quantity $unit"
+                            }
+
+                            // Update selectedQuantity und UI
+                            selectedQuantity = newQuantity
+                            selectQuantityButton.text = newQuantity
+
+                            // Aktualisiere den Holder
+                            onDataUpdated(food.name) { currentHolder ->
+                                currentHolder.copy(quantity = newQuantity)
+                            }
+                        },
+                        initialQuantityString = initialQuantityString,
+                        foodState = foodState
+                    )
+                    quantityPickerFragment.show(fragmentManager, "quantityPicker")
+                }
+            }
+
+
+            addToStockButton.setOnClickListener {
+                // Starte die Animation
+                Animations.animateButton(addToStockButton)
+
+                // Verarbeite das Hinzufügen zur Datenbank
+                val quantityParts = selectedQuantity.split(" ")
+                val quantity = quantityParts.firstOrNull()?.toDoubleOrNull() ?: 0.0
+                val unitText = quantityParts.getOrNull(1) ?: ""
+                val unitEnum = Converters.getUnitEnumFromText(unitText)
+
+                val fragmentManager = (itemView.context as? AppCompatActivity)?.lifecycleScope
+
+                fragmentManager?.launch {
+                    val foodCard = FoodCard(
+                        id = null,
+                        foodId = foodName,
+                        quantity = quantity,
+                        unit = unitEnum,
+                        isActive = false,
+                        expiryDate = selectedDate.takeIf { it != itemView.context.getString(R.string.placeholder_expiryDate) },
+                        stockId = null,
+                        routineId = null,
+                        state = null
+                    )
+
+                    try {
+                        if (!showFinishButton) {
+                            foodCard.stockId = stockId
+                            stockController.addFoodCardToStock(foodCard, stockId)
+                        } else {
+                            foodCard.routineId = routineId
+                            routineController.addFoodCardToRoutine(foodCard, routineId)
+                        }
+                    } catch (e: SQLiteConstraintException) {
+                        Log.e("FoodAdapter", "SQLiteConstraintException: ${e.message}. FoodCard: $foodCard")
+                        Toast.makeText(itemView.context, "SQLiteConstraintException", Toast.LENGTH_SHORT).show()
+                    } catch (e: SQLiteException) {
+                        Log.e("FoodAdapter", "SQLiteException: ${e.message}. FoodCard: $foodCard")
+                        Toast.makeText(itemView.context, "SQLiteException", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Log.e("FoodAdapter", "Exception: ${e.message}. FoodCard: $foodCard")
+                        Toast.makeText(itemView.context, "Exception occurred", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Returns the total number of items in the data set held by the adapter.
+     * Creates a new ViewHolder when there are no existing ViewHolders available to reuse.
      *
-     * @return The number of items in foodList.
+     * @param viewGroup The parent view that will hold the ViewHolder.
+     * @param viewType The type of view to create.
+     * @return A new ViewHolder instance.
      */
-    override fun getItemCount(): Int = foodList.size
-
-    /**
-     * Converts the category name from a database code to a readable format for display.
-     *
-     * @param category The category name from the database.
-     * @return A readable category name in German.
-     */
-    private fun convertCategory(category: String): String {
-        return when (category) {
-            "OBST" -> "Obst"
-            "GEMUESE" -> "Gemüse"
-            "FLEISCH" -> "Fleisch"
-            "GETREIDE" -> "Getreide"
-            "MILCHPRODUKT" -> "Milchprodukt"
-            "FISCH" -> "Fisch"
-            "HUELSENFRUCHT" -> "Hülsenfrucht"
-            "SAMEN" -> "Samen"
-            "NUSS" -> "Nuss"
-            "OEL" -> "Öl"
-            "FETT" -> "Fett"
-            "EI" -> "Ei"
-            "GEWUERZ" -> "Gewürz"
-            else -> category
-        }
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemFoodBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+        return ViewHolder(binding)
     }
 
     /**
-     * Updates the data in the adapter and refreshes the view.
+     * Binds the food item data and selected date and quantity from the map to the ViewHolder.
      *
-     * @param newFoodList The new list of Food items.
+     * @param holder The ViewHolder to bind data to.
+     * @param position The position of the food item in the adapter.
      */
-    fun updateData(newFoodList: List<Food>) {
-        foodList = newFoodList
-        notifyDataSetChanged() // Refreshes the entire list; consider using DiffUtil for efficiency
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val food = foodSet[position]
+        val selectedFoodHolder = selectedFoodMap[food.name] ?: SelectedFoodHolder()
+
+        holder.bind(food, selectedFoodHolder, { foodName, updateFunction ->
+            val currentHolder = selectedFoodMap[foodName] ?: SelectedFoodHolder()
+            val updatedHolder = updateFunction(currentHolder)
+            selectedFoodMap[foodName] = updatedHolder
+        }, routineController)
+    }
+
+
+    /**
+     * Updates the food set and notifies the adapter that the data has changed.
+     * @param newFoodSet new list of foods, displayed in the adapter
+     */
+    fun updateData(newFoodSet: List<Food>) {
+        foodSet = newFoodSet
+        notifyDataSetChanged() // Benachrichtige die RecyclerView, dass sich die Daten geändert haben
+    }
+
+    /**
+     * Returns the total number of food items in the adapter.
+     *
+     * @return The size of the foodSet array.
+     */
+    override fun getItemCount(): Int {
+        return foodSet.size
     }
 }

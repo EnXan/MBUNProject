@@ -1,0 +1,127 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/routine_background"
+    android:clipToPadding="false"
+    android:elevation="20dp"
+    android:padding="15dp">
+
+    <!-- Horizontales Layout für Text und Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Vertikales Layout für Titel und Kategorie -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/routine_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Routinenname"
+                android:textColor="@color/text_foreground_light"
+                android:textSize="15sp"
+                android:background="@null"
+                android:drawablePadding="3dp"
+                android:drawableEnd="@drawable/ic_edit"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+        <!-- Button rechts im Layout -->
+        <ImageButton
+            android:id="@+id/btn_delete_routine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_remove_black"
+            android:padding="4dp"
+            android:contentDescription="delete_food"
+            android:background="@drawable/btn_delete_food" />
+    </LinearLayout>
+
+    <!-- Horizontales Layout für Haltbarkeit und Menge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rhythmus"
+            android:textColor="@color/pure_white"
+            />
+        <Button
+            android:id="@+id/btn_select_rhythm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rhythm_placeholder"
+            android:layout_marginTop="3dp"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-light"
+            android:paddingVertical="2dp"
+            android:minHeight="0dp"
+            android:textAllCaps="false"
+            android:background="@drawable/bg_white_input"
+            android:drawableStart="@drawable/ic_calendar_lightteal_sizable"
+            android:drawableEnd="@drawable/ic_arrow_down_lightteal"
+            android:textColor="@color/tertiary_teal_light"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:paddingHorizontal="10dp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lebensmittel"
+            android:textColor="@color/pure_white"
+            android:layout_marginTop="20dp"
+            />
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/food_card_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:flexWrap="wrap"
+            app:flexDirection="row"
+            app:justifyContent="flex_start"
+            android:layout_marginTop="10dp"
+            android:padding="8dp">
+        </com.google.android.flexbox.FlexboxLayout>
+
+        <ImageButton
+            android:id="@+id/add_food_button"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_black"
+            android:background="@drawable/bg_white_circle"
+            />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_activity"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:scaleX="1.1"
+            android:scaleY="1.1"
+            android:layout_gravity="end"
+            android:paddingEnd="3dp"
+            android:enabled="true"
+            android:checked="true"
+            app:trackTint="@color/tertiary_teal_light"
+            app:thumbTint="@color/pure_white"
+            />
+
+    </LinearLayout>
+</LinearLayout>

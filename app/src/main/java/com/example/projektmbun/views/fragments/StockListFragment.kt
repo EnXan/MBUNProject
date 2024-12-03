@@ -1,0 +1,132 @@
+package com.example.projektmbun.views.fragments
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.projektmbun.R
+import com.example.projektmbun.controller.FoodCardController
+import com.example.projektmbun.controller.StockController
+import com.example.projektmbun.databinding.FragmentStockListBinding
+import com.example.projektmbun.models.daos.FoodCardDao
+import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
+import com.example.projektmbun.models.daos.StockDao
+import com.example.projektmbun.models.data.food_card.FoodCard
+import com.example.projektmbun.utils.enums.FoodCardStateEnum
+import com.example.projektmbun.models.data.relations.FoodCardWithDetails
+import com.example.projektmbun.models.database.AppDatabase
+import com.example.projektmbun.utils.SpaceItemDecoration
+import com.example.projektmbun.utils.addSearchListener
+import com.example.projektmbun.views.adapters.StockFoodCardListAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class StockListFragment : Fragment() {
+
+    private var _binding: FragmentStockListBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var foodCardDao: FoodCardDao
+    private lateinit var foodCardController: FoodCardController
+    private lateinit var stockFoodCardListAdapter: StockFoodCardListAdapter
+    private lateinit var closeButton: LinearLayout
+    private lateinit var stockDao: StockDao
+    private lateinit var stockController: StockController
+    private lateinit var foodCounterButton: Button
+    private lateinit var foodCardWithDetailsDao: FoodCardWithDetailsDao
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentStockListBinding.inflate(inflater, container, false)
+        val view = binding.root
+        foodCardDao = AppDatabase.getDatabase(requireContext()).foodCardDao()
+        foodCardWithDetailsDao = AppDatabase.getDatabase(requireContext()).foodCardWithDetailsDao()
+        foodCardController = FoodCardController(foodCardDao, foodCardWithDetailsDao)
+
+        stockDao = AppDatabase.getDatabase(requireContext()).stockDao()
+        stockController = StockController(stockDao, foodCardDao)
+
+        binding.searchEditText.searchEditText.hint = "Lebensmittel im Vorrat suchen..."
+
+        binding.searchEditText.scanIcon.setImageDrawable(null)
+
+        binding.searchEditText.searchEditText.addSearchListener(lifecycleScope) { query ->
+            lifecycleScope.launch(Dispatchers.IO) {
+                val results = foodCardController.getFoodCardsByName(query)
+                withContext(Dispatchers.Main) {
+                    updateRecyclerView(results)
+                }
+            }
+        }
+
+        closeButton = binding.btnCloseStocklist
+        closeButton.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
+        foodCounterButton = binding.btnFoodCounter
+
+        val recyclerView: RecyclerView = binding.foodlistView
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        stockFoodCardListAdapter = StockFoodCardListAdapter(emptyList(), requireContext())
+        recyclerView.adapter = stockFoodCardListAdapter
+
+        loadFoodCards()
+
+        //Set space between every food element
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        val itemDecoration = SpaceItemDecoration(spacing)
+        recyclerView.addItemDecoration(itemDecoration)
+        return view
+    }
+
+    private fun loadFoodCards() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Lade FoodCards aus der Vorratsliste
+            val stockFoodCardWithFoodList = foodCardController.getFoodCardsInStock()
+
+            withContext(Dispatchers.Main) {
+                stockFoodCardListAdapter.updateData(stockFoodCardWithFoodList)
+            }
+        }
+    }
+
+    private fun addFoodCardToStock(foodCard: FoodCard) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            stockController.addFoodCardToStock(foodCard, 1)
+            loadFoodCards() // UI aktualisieren
+        }
+    }
+
+    private fun removeFoodCardFromStock(foodCardId: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            foodCardController.removeFoodCardFromStock(foodCardId)
+            loadFoodCards() // UI aktualisieren
+        }
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        loadFoodCards()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun updateRecyclerView(foodCardList: List<FoodCardWithDetails>) {
+        stockFoodCardListAdapter.updateData(foodCardList)
+    }
+}

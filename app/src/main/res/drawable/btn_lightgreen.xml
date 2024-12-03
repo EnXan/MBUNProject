@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Hintergrundebene der Karte -->
-    <corners android:radius="16dp" /> <!-- Abgerundete Ecken -->
-    <solid android:color="@color/primary_green_light" />
-</shape>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Zustand: Gedrückt -->
+    <item android:state_pressed="true">
+        <shape>
+            <corners android:radius="16dp" />
+            <solid android:color="@color/primary_accent_dark" />
+        </shape>
+    </item>
+
+    <!-- Zustand: Deaktiviert -->
+    <item android:state_enabled="false">
+        <shape>
+            <corners android:radius="16dp" />
+            <solid android:color="@color/gray" />
+        </shape>
+    </item>
+
+    <!-- Standardzustand -->
+    <item>
+        <shape>
+            <corners android:radius="16dp" />
+            <solid android:color="@color/primary_green_light" />
+        </shape>
+    </item>
+</selector>

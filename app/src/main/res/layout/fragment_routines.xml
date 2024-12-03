@@ -3,11 +3,55 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:clipToPadding="false"
+    android:paddingHorizontal="26dp"
+    android:gravity="center_horizontal"
 
-    <TextView
-        android:layout_width="wrap_content"
+    android:paddingTop="50dp">
+
+    <!-- Oberes Layout mit Text und Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Routines"
-        android:textSize="24sp"/>
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/meine_routinen"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="20sp"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btn_food_counter"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="3dp"
+            android:text="0"
+            android:textColor="@color/pure_white"
+            android:textSize="20sp"
+            android:background="@drawable/btn_count_items_teal" />
+    </LinearLayout>
+
+
+    <!-- Suchleiste unter dem oberen Layout -->
+    <include
+        android:id="@+id/search_bar"
+        layout="@layout/searchbar" />
+
+    <!-- Layout mit Schaltflächen und Abständen -->
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="20dp"
+        android:id="@+id/routine_recycler_view"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
 </LinearLayout>

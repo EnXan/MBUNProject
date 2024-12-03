@@ -4,7 +4,6 @@
     android:orientation="vertical"
     android:background="@drawable/food_card_background"
     android:clipToPadding="false"
-    android:elevation="20dp"
     android:padding="15dp">
 
     <!-- Horizontales Layout für Text und Button -->
@@ -41,7 +40,7 @@
 
         <!-- Button rechts im Layout -->
         <ImageButton
-            android:id="@+id/actionButton"
+            android:id="@+id/btn_add_to_stock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_add_black"
@@ -83,10 +82,10 @@
 
 
         <Button
-            android:id="@+id/btn_select_menge"
+            android:id="@+id/btn_select_quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="100 g"
+            android:text=""
             android:textAlignment="textStart"
             android:textSize="13sp"
             android:fontFamily="sans-serif-light"

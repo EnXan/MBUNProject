@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="@color/tertiary_teal" />
-    <corners android:radius="1000dp"
-        />
-</shape>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Zustand: Gedrückt -->
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/tertiary_teal_dark" />
+            <corners android:radius="1000dp" />
+        </shape>
+    </item>
+
+    <!-- Zustand: Deaktiviert -->
+    <item android:state_enabled="false">
+        <shape android:shape="oval">
+            <solid android:color="@color/gray" />
+            <corners android:radius="1000dp" />
+        </shape>
+    </item>
+
+    <!-- Standardzustand -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/tertiary_teal" />
+            <corners android:radius="1000dp" />
+        </shape>
+    </item>
+</selector>

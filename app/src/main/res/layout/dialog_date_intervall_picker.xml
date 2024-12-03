@@ -1,0 +1,90 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Schritt 1: Datumsauswahl -->
+    <TextView
+        android:id="@+id/label_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wähle das Startdatum"
+        android:textSize="20sp"
+        android:paddingBottom="8dp" />
+
+    <CalendarView
+        android:id="@+id/calendar_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Schritt 2: Intervallauswahl -->
+    <TextView
+        android:id="@+id/label_interval"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wähle das Intervall"
+        android:textSize="20sp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/interval_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/interval_daily"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Täglich" />
+
+        <RadioButton
+            android:id="@+id/interval_weekly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wöchentlich" />
+
+        <RadioButton
+            android:id="@+id/interval_2_weeks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alle 2 Wochen" />
+
+        <RadioButton
+            android:id="@+id/interval_3_weeks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alle 3 Wochen" />
+
+        <RadioButton
+            android:id="@+id/interval_4_weeks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alle 4 Wochen" />
+    </RadioGroup>
+
+    <!-- Bestätigen und Abbrechen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="16dp">
+
+        <Button
+            android:id="@+id/button_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Abbrechen" />
+
+        <Button
+            android:id="@+id/button_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bestätigen"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,52 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingVertical="8dp">
+
+        <!-- Menge -->
+        <TextView
+            android:id="@+id/quantity_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="Menge"
+            android:textSize="16sp"
+            android:paddingRight="2dp"
+            android:gravity="right"/>
+
+        <!-- Einheit -->
+        <TextView
+            android:id="@+id/quantity_unit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Einheit"
+            android:textSize="16sp"
+            android:gravity="left"/>
+
+        <!-- Zutat -->
+        <TextView
+            android:id="@+id/ingredient_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Zutat"
+            android:textSize="16sp"
+            android:gravity="left"/>
+    </LinearLayout>
+
+
+    <!-- Trennlinie -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
+</LinearLayout>

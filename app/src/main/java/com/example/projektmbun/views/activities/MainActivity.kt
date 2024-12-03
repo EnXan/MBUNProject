@@ -4,65 +4,60 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
-import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import androidx.work.*
 import com.example.projektmbun.R
-import com.example.projektmbun.views.fragments.StockFragment
-import com.example.projektmbun.views.fragments.MenuFragment
-import com.example.projektmbun.views.fragments.RecipesFragment
-import com.example.projektmbun.views.fragments.RoutinesFragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationBarView
+import com.example.projektmbun.databinding.ActivityMainBinding
+import com.example.projektmbun.workers.RoutineExecutionWorker
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
-/**
- * MainActivity is the main entry point of the app, providing a bottom navigation
- * view for navigating between fragments and initializing the EmojiCompat library.
- */
 class MainActivity : AppCompatActivity() {
 
-    /**
-     * Called when the activity is starting. This is where most initialization should happen.
-     * The method initializes EmojiCompat for emoji support, sets up the bottom navigation
-     * listener, and loads the default fragment.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being
-     * shut down, this Bundle contains the data it most recently supplied in onSaveInstanceState.
-     */
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Initialize EmojiCompat for emoji support
         val executor = Executors.newSingleThreadExecutor()
         val config = BundledEmojiCompatConfig(this, executor)
         EmojiCompat.init(config)
 
-        setContentView(R.layout.activity_main)
+        // Set up BottomNavigationView with NavController
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        binding.bottomNavigation.setupWithNavController(navController)
 
-        // Set up bottom navigation view and its item selection listener
-        val bottomNav: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNav.setOnItemSelectedListener(navListener)
+        // Initialize and set up the routine worker
+        setupRoutineWorker()
 
-        // Load the default fragment if this is the first time the activity is created
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().replace(R.id.fragment_container, MenuFragment()).commit()
-        }
     }
 
-    /**
-     * Listener for bottom navigation item selection. Replaces the current fragment with
-     * the selected fragment based on the item ID.
-     */
-    private val navListener = NavigationBarView.OnItemSelectedListener { item ->
-        val selectedFragment: Fragment = when (item.itemId) {
-            R.id.nav_home -> MenuFragment()
-            R.id.nav_stock -> StockFragment()
-            R.id.nav_routines -> RoutinesFragment()
-            R.id.nav_recipes -> RecipesFragment()
-            else -> StockFragment()
-        }
+    private fun setupRoutineWorker() {
+        // Define constraints
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true) // Only run when battery is not low
+            .setRequiresCharging(true)     // Only run when device is charging
+            .build()
 
-        // Replace the fragment container with the selected fragment
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, selectedFragment).commit()
-        true
+        // Create a periodic work request
+        val routineWorkerRequest = PeriodicWorkRequestBuilder<RoutineExecutionWorker>(
+            1, TimeUnit.DAYS // Run daily
+        )
+            .setConstraints(constraints) // Add constraints
+            .setInitialDelay(24, TimeUnit.HOURS) // Wait 24 hours before the first run
+            .build()
+
+        // Enqueue the work request
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "RoutineExecution", // Unique name for this worker
+            ExistingPeriodicWorkPolicy.UPDATE, // Replace existing work with the same name
+            routineWorkerRequest
+        )
     }
 }

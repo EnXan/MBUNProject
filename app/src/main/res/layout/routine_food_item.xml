@@ -1,0 +1,40 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    >
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="5dp"
+        android:background="@drawable/bg_routine_food"
+        >
+    <TextView
+        android:id="@+id/routine_food_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lebensmittel"
+        android:textSize="10sp"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="3dp"
+        android:textColor="@color/pure_white"
+        />
+
+        <ImageButton
+            android:id="@+id/btn_delete_food"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:src="@drawable/ic_remove"
+            android:layout_marginEnd="-8dp"
+            android:layout_marginTop="-8dp"
+            android:elevation="8dp"
+            android:background="@android:color/transparent"
+            />
+
+    </FrameLayout>
+
+</LinearLayout>

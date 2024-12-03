@@ -1,113 +1,80 @@
 package com.example.projektmbun.controller
 
-import android.content.Context
 import android.util.Log
 import com.example.projektmbun.models.daos.FoodDao
-import com.example.projektmbun.models.data.Food
-import com.example.projektmbun.models.database.FoodDatabase
+import com.example.projektmbun.models.data.food.Food
+import com.example.projektmbun.utils.enums.FoodCategoryEnum
+import com.example.projektmbun.utils.SearchLogic
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
 
+/**
+ * Controller class responsible for managing `Food` operations, including
+ * fetching food items by name, category, or retrieving all food items.
+ * It interacts with the `FoodDao` to perform database operations and provides
+ * business logic for handling food-related functionality.
+ *
+ * @property foodDao DAO for performing `Food` operations.
+ */
 class FoodController(private val foodDao: FoodDao) {
 
     /**
-     * Add or update a new food entry to the database.
-     * @param food name of the related food.
-     */
-    @Deprecated("Brauche ich eigentlich nicht!")
-    suspend fun addFood(food: Food) {
-        if (food.food.isEmpty() || food.food.isBlank()) {
-            throw IllegalArgumentException("food name can't be empty or blank!")
-        }
-        withContext(Dispatchers.IO) {
-            try {
-                foodDao.createOrReplaceFood(food)
-            } catch (e: Exception) {
-                Log.e("FoodController", "Error adding or updating food: ${e.message}")
-                // Optionally, throw a custom exception or notify the UI of the error
-                throw e
-            }
-        }
-    }
-
-    /**
-     * Deletes a food entry from the database by its name.
-     * @param food name of the food.
-     */
-    @Deprecated("Brauche ich eigentlich nicht!")
-    suspend fun deleteFood(food: Food) {
-        withContext(Dispatchers.IO) {
-            try {
-                foodDao.deleteFood(food)
-            } catch (e: Exception) {
-                Log.e("FoodController", "Error deleting food: ${e.message}")
-                // Optionally, throw a custom exception or notify the UI of the error
-                throw e
-            }
-        }
-    }
-
-    /**
-     * Get food by its name.
+     * Get food by their name with fuzzy search..
      * @param name of the food.
-     * @return Flow list of all found foods.
+     * @return List of all found food or empty list `List<Food>`.
      */
-    fun getFood(name: String): Flow<List<Food>> {
-        return try {
-            foodDao.getFoodsByName(name)
+    suspend fun getFoodByName(name: String): List<Food> = withContext(Dispatchers.IO) {
+        val trimmedName = name.trim()
+        try {
+            val allFood = foodDao.getAllFood()
+
+            if (trimmedName.isBlank()) {
+                return@withContext allFood
+            }
+
+            //call Fuzzy-Search if name not empty
+            SearchLogic.fuzzySearch(
+                query = trimmedName,
+                items = allFood,
+                nameSelector = { food -> food.name },
+                threshold = -3
+            )
         } catch (e: Exception) {
             Log.e("FoodController", "Error fetching food by name: ${e.message}")
-            // Return an empty flow if there's an error
-            emptyFlow()
+            emptyList()
         }
     }
 
     /**
      * Get all foods.
-     * @return Flow list of all foods.
+     * @return List of all food or empty list `List<Food>`.
      */
-    fun getAllFood(): Flow<List<Food>> {
-        return try {
-            foodDao.getAllFood()
-        } catch (e: Exception) {
+    suspend fun getAllFood(): List<Food> {
+        return withContext(Dispatchers.IO) {
+            try {
+                foodDao.getAllFood()
+            }
+            catch (e: Exception) {
             Log.e("FoodController", "Error fetching all foods: ${e.message}")
-            emptyFlow()
+            emptyList()
+        }
         }
     }
 
     /**
-     * Get food by its category.
+     * Get food by their category.
      * @param category of the food.
-     * @return Flow list of all found foods.
+     * @return List of all found food or empty list `List<Food>`.
      */
-    fun getFoodByCategory(category: String): Flow<List<Food>> {
-        return try {
-            foodDao.getFoodsByCategory(category)
-        } catch (e: Exception) {
-            Log.e("FoodController", "Error fetching food by category: ${e.message}")
-            emptyFlow()
+    suspend fun getFoodByCategory(category: FoodCategoryEnum): List<Food> {
+        return withContext(Dispatchers.IO) {
+            try {
+                foodDao.getFoodByCategory(category)
+            }
+            catch (e: Exception) {
+                Log.e("FoodController", "Error fetching food by category: ${e.message}")
+                emptyList()
+            }
         }
     }
-
-    /**
-     * get food by search and selected category
-     * @param query as string
-     * @param category selected
-     * @return Flow list of all found foods.
-     */
-    suspend fun getFilteredFood(query: String, category: String?): Flow<List<Food>> {
-        // Implement logic to filter by both query and category
-        return if (category != null && query.isNotEmpty()) {
-            foodDao.getFoodsByCategoryAndQuery(category, query)
-        } else if (category != null) {
-            foodDao.getFoodsByCategory(category)
-        } else if (query.isNotEmpty()) {
-            foodDao.getFoodsByName(query)
-        } else {
-            foodDao.getAllFood()
-        }
-    }
-
 }

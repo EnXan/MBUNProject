@@ -1,0 +1,108 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pure_white"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Hauptinhalt -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:paddingTop="50dp"
+        android:background="@color/pure_white"
+        android:paddingHorizontal="26dp"
+        android:gravity="center_horizontal">
+
+        <!-- Oberes Layout mit Text und Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mein Vorrat"
+                android:textSize="20sp"
+                android:textColor="@color/black"
+                android:fontFamily="sans-serif-medium" />
+
+            <Button
+                android:id="@+id/btn_food_counter"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="3dp"
+                android:text="0"
+                android:textSize="20sp"
+                android:textColor="@color/pure_white"
+                android:background="@drawable/btn_count_items_teal" />
+        </LinearLayout>
+
+        <!-- Suchleiste -->
+        <include
+            android:id="@+id/search_edit_text"
+            layout="@layout/searchbar" />
+
+        <!-- Weitere Views können hier hinzugefügt werden -->
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_marginTop="20dp"
+            android:id="@+id/foodlist_view"
+            android:clipToPadding="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="80dp"
+            />
+
+    </LinearLayout>
+
+
+    <!-- Button mit Badge-Overlay am unteren Rand des Bildschirms -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="16dp">
+
+        <!-- Layout für Button mit Badge-Text -->
+        <LinearLayout
+            android:id="@+id/btn_close_stocklist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:elevation="20dp"
+            android:background="@drawable/btn_finished"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Button Text -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fertig"
+                android:textSize="18sp"
+                android:textColor="@color/pure_white"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Badge Text -->
+            <TextView
+                android:id="@+id/badge_text"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/btn_count_items_teal"
+                android:text="0"
+                android:textColor="@color/pure_white"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"
+                android:gravity="center"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

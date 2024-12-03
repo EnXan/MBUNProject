@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_home"
+        android:id="@+id/fragment_menu"
         android:enabled="true"
         android:icon="@drawable/ic_home_black"
         android:title="Home" />
     <item
-        android:id="@+id/nav_stock"
+        android:id="@+id/fragment_stock"
         android:enabled="true"
         android:icon="@drawable/ic_stock_black"
         android:title="Vorrat" />
     <item
-        android:id="@+id/nav_routines"
+        android:id="@+id/fragment_routine"
         android:enabled="true"
         android:icon="@drawable/ic_routines_black"
         android:title="Routinen" />
     <item
-        android:id="@+id/nav_recipes"
+        android:id="@+id/fragment_recipes"
         android:enabled="true"
         android:icon="@drawable/ic_receipt_black"
         android:title="Rezepte" />

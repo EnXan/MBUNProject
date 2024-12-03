@@ -1,0 +1,57 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_expiry_date"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/expiry_date_background"
+    android:elevation="4dp"
+    android:clipToPadding="false"
+    android:padding="10dp">
+
+    <!-- Horizontales Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingVertical="5dp">
+
+        <!-- Vertikales Layout für Titel und Kategorie -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="start">
+
+            <TextView
+                android:id="@+id/expiry_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:layout_gravity="end"
+                android:text="Haltbar bis"
+                android:textSize="13sp"
+                android:textColor="#B2FFFFFF" />
+
+            <TextView
+                android:id="@+id/foodTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lebensmittelname"
+                android:textColor="#D8000000"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/foodCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kategorie"
+                android:textColor="#80000000"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- TextView für Haltbarkeitsdatum rechtsbündig -->
+
+    </LinearLayout>
+</LinearLayout>

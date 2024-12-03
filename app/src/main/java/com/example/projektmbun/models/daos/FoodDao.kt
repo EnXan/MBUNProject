@@ -1,66 +1,47 @@
 package com.example.projektmbun.models.daos
 
 import androidx.room.Dao
-import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Upsert
-import com.example.projektmbun.models.data.Food
-import kotlinx.coroutines.flow.Flow
+import com.example.projektmbun.models.data.food.Food
+import com.example.projektmbun.utils.enums.FoodCategoryEnum
 
 /**
- * Data access object to interact with food table of foodDatabase
+ * Data Access Object (DAO) interface for performing database operations on the `Food` entity.
+ * Provides methods for creating, retrieving, and filtering food records by name, category, or all records.
  */
 @Dao
 interface FoodDao {
 
     /**
-     * Add a new food or replace an existing one.
+     * Add a new food to the database.
      * @param food The food to create or replace.
+     * @return Id of the created food `Long`.
      */
-    @Upsert
-    suspend fun createOrReplaceFood(food: Food)
-
-    /**
-     * Delete a specific food.
-     * @param food The food to be deleted.
-     */
-    @Delete
-    suspend fun deleteFood(food: Food)
-
+    @Insert
+    suspend fun createFood(food: Food) : Long
 
     /**
      * Get all foods by name.
      * @param name The name of the food to get.
-     * @return Flow with a matching list of foods by name.
+     * @return List of foods by name or empty list `List<Food>`.
      */
-    @Query("SELECT * FROM food WHERE food LIKE '%' || :name || '%'")
-    fun getFoodsByName(name: String): Flow<List<Food>>
+    @Query("SELECT * FROM food WHERE name LIKE '%' || :name || '%'")
+    fun getFoodByName(name: String): List<Food>
 
     /**
      * Get all foods by category.
      * @param category The category of the food to get.
-     * @return Flow with a matching list of foods by category.
+     * @return List of foods by category or empty list `List<Food>`.
      */
     @Query("SELECT * FROM food WHERE category = :category")
-    fun getFoodsByCategory(category: String): Flow<List<Food>>
+    fun getFoodByCategory(category: FoodCategoryEnum): List<Food>
 
     /**
      * Get all foods.
-     * @return All foods.
+     * @return All foods or empty list if not found `List<Food>`.
      */
     @Query("SELECT * FROM food")
-    fun getAllFood(): Flow<List<Food>>
-
-    /**
-     * Get all foods depending on search and category.
-     * @return Flow with a matching list of foods
-     */
-    @Query("""
-        SELECT * FROM food
-        WHERE (:category IS NULL OR category = :category)
-        AND (:query IS NULL OR food LIKE '%' || :query || '%')
-    """)
-    fun getFoodsByCategoryAndQuery(category: String?, query: String?): Flow<List<Food>>
-
+    fun getAllFood(): List<Food>
 
 }
