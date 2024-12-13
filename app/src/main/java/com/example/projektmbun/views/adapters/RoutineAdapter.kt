@@ -12,8 +12,9 @@ import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.RoutineController
 import com.example.projektmbun.databinding.RoutineBinding
-import com.example.projektmbun.models.data.food_card.FoodCard
-import com.example.projektmbun.models.data.routine.Routine
+import com.example.projektmbun.models.data_structure.food_card.FoodCard
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
+import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.views.dialogs.DateIntervalPickerDialog
 import com.example.projektmbun.views.fragments.RoutinesFragmentDirections
 import kotlinx.coroutines.CoroutineScope
@@ -34,9 +35,9 @@ class RoutineAdapter(
 
         fun bind(
             routine: Routine,
-            foodCards: List<FoodCard>,
+            foodCards: List<FoodCardWithDetails>,
             onAddFoodCard: (View) -> Unit,
-            onDeleteFoodCard: (FoodCard, RoutineBinding) -> Unit,
+            onDeleteFoodCard: (FoodCardWithDetails, RoutineBinding) -> Unit,
             onDeleteRoutine: () -> Unit,
             onRoutineUpdated: (Routine) -> Unit
         ) {
@@ -59,14 +60,14 @@ class RoutineAdapter(
             }
         }
 
-        private fun setupFoodCards(foodCards: List<FoodCard>, onDeleteFoodCard: (FoodCard, RoutineBinding) -> Unit) {
+        private fun setupFoodCards(foodCards: List<FoodCardWithDetails>, onDeleteFoodCard: (FoodCardWithDetails, RoutineBinding) -> Unit) {
             binding.foodCardContainer.removeAllViews()
             for (foodCard in foodCards) {
                 val foodCardView = LayoutInflater.from(binding.foodCardContainer.context)
                     .inflate(R.layout.routine_food_item, binding.foodCardContainer, false)
 
-                foodCardView.tag = foodCard.id
-                foodCardView.findViewById<TextView>(R.id.routine_food_title).text = foodCard.foodId
+                foodCardView.tag = foodCard.foodCard.id
+                foodCardView.findViewById<TextView>(R.id.routine_food_title).text = foodCard.foodCard.foodId
 
                 foodCardView.findViewById<View>(R.id.btn_delete_food).setOnClickListener {
                     onDeleteFoodCard(foodCard, binding)
@@ -131,7 +132,7 @@ class RoutineAdapter(
                         routine.id?.let {
                             routineController.removeFoodCardFromRoutine(foodCard)
                             withContext(Dispatchers.Main) {
-                                val foodCardView = binding.foodCardContainer.findViewWithTag<View>(foodCard.id)
+                                val foodCardView = binding.foodCardContainer.findViewWithTag<View>(foodCard.foodCard.id)
                                 foodCardView?.let { binding.foodCardContainer.removeView(it) }
                             }
                         } ?: Log.e("RoutineAdapter", "Routine ID is null.")

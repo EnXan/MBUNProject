@@ -1,7 +1,6 @@
 package com.example.projektmbun.views.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +16,11 @@ import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.FoodController
 import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.databinding.FragmentStockBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.daos.StockDao
+import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.database.AppDatabase
-import com.example.projektmbun.models.data.food.Food
-import com.example.projektmbun.models.data.stock.Stock
+import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.SpaceItemDecoration
 import com.example.projektmbun.utils.addSearchListener
@@ -53,7 +51,6 @@ class StockFragment : Fragment() {
     private lateinit var foodCardDao: FoodCardDao
     private lateinit var foodCardController: FoodCardController
     private lateinit var foodController: FoodController
-    private lateinit var foodCardWithDetailsDao: FoodCardWithDetailsDao
 
     val STOCK_ID: Int = 1
 
@@ -72,13 +69,11 @@ class StockFragment : Fragment() {
     ): View? {
         _binding = FragmentStockBinding.inflate(inflater, container, false)
         val view = binding.root
-        val foodDao = AppDatabase.getDatabase(requireContext()).foodDao()
-        foodController = FoodController(foodDao)
-
-        foodCardWithDetailsDao = AppDatabase.getDatabase(requireContext()).foodCardWithDetailsDao()
+        val foodService = FoodService()
+        foodController = FoodController(foodService)
 
         foodCardDao = AppDatabase.getDatabase(requireContext()).foodCardDao()
-        foodCardController = FoodCardController(foodCardDao, foodCardWithDetailsDao)
+        foodCardController = FoodCardController(foodCardDao, foodService)
 
         stockDao = AppDatabase.getDatabase(requireContext()).stockDao()
         stockController = StockController(stockDao, foodCardDao)
@@ -106,7 +101,7 @@ class StockFragment : Fragment() {
 
         binding.searchBar.searchEditText.addSearchListener(lifecycleScope) { query ->
             lifecycleScope.launch(Dispatchers.IO) {
-                val results = foodController.getFoodByName(query)
+                val results = foodController.searchFoodByName(query)
                 withContext(Dispatchers.Main) {
                     updateRecyclerView(results)
                 }

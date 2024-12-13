@@ -1,8 +1,11 @@
 package com.example.projektmbun.utils.enums
 
+import kotlinx.serialization.Serializable
+
 /**
  * Enum of all possible food categories.
  */
+@Serializable
 enum class FoodCategoryEnum {
     GEMUESE,
     OBST,
@@ -16,5 +19,6 @@ enum class FoodCategoryEnum {
     OEL,
     FETT,
     EI,
-    GEWUERZ
+    GEWUERZ,
+    UNBEKANNT
 }

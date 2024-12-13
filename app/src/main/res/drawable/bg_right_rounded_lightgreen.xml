@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Hintergrund des Spinners -->
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+            <!-- Hintergrundebene der Karte -->
+            <corners android:bottomRightRadius="10dp" android:topRightRadius="10dp" /> <!-- Abgerundete Ecken -->
+            <solid android:color="@color/text_background_light" />
+            <stroke android:color="@color/black" android:width="2dp" />
+        </shape>
+    </item>
+</layer-list>

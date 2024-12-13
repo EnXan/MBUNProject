@@ -1,80 +1,69 @@
 package com.example.projektmbun.controller
 
-import android.util.Log
-import com.example.projektmbun.models.daos.FoodDao
-import com.example.projektmbun.models.data.food.Food
+import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
-import com.example.projektmbun.utils.SearchLogic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Controller class responsible for managing `Food` operations, including
- * fetching food items by name, category, or retrieving all food items.
- * It interacts with the `FoodDao` to perform database operations and provides
- * business logic for handling food-related functionality.
- *
- * @property foodDao DAO for performing `Food` operations.
- */
-class FoodController(private val foodDao: FoodDao) {
+class FoodController(private val foodService: FoodService) {
 
     /**
-     * Get food by their name with fuzzy search..
-     * @param name of the food.
-     * @return List of all found food or empty list `List<Food>`.
+     * Create a new food entry.
+     * @param food The food item to create.
+     * @return True if the operation succeeded, false otherwise.
      */
-    suspend fun getFoodByName(name: String): List<Food> = withContext(Dispatchers.IO) {
-        val trimmedName = name.trim()
+    suspend fun createFood(food: Food): Boolean = withContext(Dispatchers.IO) {
+        if (food.name.isBlank()) {
+            throw IllegalArgumentException("Food name cannot be empty.")
+        }
+
         try {
-            val allFood = foodDao.getAllFood()
-
-            if (trimmedName.isBlank()) {
-                return@withContext allFood
-            }
-
-            //call Fuzzy-Search if name not empty
-            SearchLogic.fuzzySearch(
-                query = trimmedName,
-                items = allFood,
-                nameSelector = { food -> food.name },
-                threshold = -3
-            )
+            foodService.createFood(food)
         } catch (e: Exception) {
-            Log.e("FoodController", "Error fetching food by name: ${e.message}")
-            emptyList()
+            throw Exception("Failed to create food: ${e.localizedMessage}")
         }
     }
 
     /**
-     * Get all foods.
-     * @return List of all food or empty list `List<Food>`.
+     * Fetch a list of food items by name.
+     * @param name The name of the food item to search for.
+     * @return A list of matching food items or an empty list if none are found.
      */
-    suspend fun getAllFood(): List<Food> {
-        return withContext(Dispatchers.IO) {
-            try {
-                foodDao.getAllFood()
-            }
-            catch (e: Exception) {
-            Log.e("FoodController", "Error fetching all foods: ${e.message}")
-            emptyList()
+    suspend fun searchFoodByName(name: String): List<Food> = withContext(Dispatchers.IO) {
+        if (name.isBlank()) {
+            return@withContext emptyList()
         }
+
+        try {
+            foodService.getFoodByName(name)
+        } catch (e: Exception) {
+            throw Exception("Failed to fetch food by name: ${e.localizedMessage}")
         }
     }
 
     /**
-     * Get food by their category.
-     * @param category of the food.
-     * @return List of all found food or empty list `List<Food>`.
+     * Fetch all food items.
+     * @return A list of all food items or an empty list if none are found.
      */
-    suspend fun getFoodByCategory(category: FoodCategoryEnum): List<Food> {
-        return withContext(Dispatchers.IO) {
-            try {
-                foodDao.getFoodByCategory(category)
-            }
-            catch (e: Exception) {
-                Log.e("FoodController", "Error fetching food by category: ${e.message}")
-                emptyList()
-            }
+    suspend fun getAllFood(): List<Food> = withContext(Dispatchers.IO) {
+        try {
+            foodService.getAllFood()
+        } catch (e: Exception) {
+            throw Exception("Failed to fetch all food items: ${e.localizedMessage}")
+        }
+    }
+
+    /**
+     * Fetch food items by category.
+     * @param category The food category to filter by.
+     * @return A list of matching food items or an empty list if none are found.
+     */
+    suspend fun getFoodByCategory(category: FoodCategoryEnum): List<Food> = withContext(Dispatchers.IO) {
+        try {
+            foodService.getFoodByCategory(category)
+        } catch (e: Exception) {
+            throw Exception("Failed to fetch food by category: ${e.localizedMessage}")
         }
     }
 }

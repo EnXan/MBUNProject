@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.databinding.ItemFoodAddedBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.data.relations.FoodCardWithDetails
+import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
+import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.enums.UnitsEnum
@@ -45,13 +45,14 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
 
     private val selectedFoodCardMap = mutableMapOf<String, SelectedFoodCardHolder>()
     private lateinit var foodCardDao: FoodCardDao
-    private lateinit var foodCardWithDetailsDao: FoodCardWithDetailsDao
     private lateinit var foodCardController: FoodCardController
+    private lateinit var foodService: FoodService
 
     init {
         foodCardDao = AppDatabase.getDatabase(context).foodCardDao()
-        foodCardWithDetailsDao = AppDatabase.getDatabase(context).foodCardWithDetailsDao()
-        foodCardController = FoodCardController(foodCardDao, foodCardWithDetailsDao)
+        foodService = FoodService()
+        foodCardController = FoodCardController(foodCardDao, foodService)
+
     }
 
     /**

@@ -3,9 +3,9 @@ package com.example.projektmbun.controller
 import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteException
 import android.util.Log
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.StockDao
-import com.example.projektmbun.models.data.food_card.FoodCard
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.StockDao
+import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

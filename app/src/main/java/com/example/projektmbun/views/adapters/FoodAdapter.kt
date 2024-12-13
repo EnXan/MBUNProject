@@ -18,19 +18,17 @@ import com.example.projektmbun.R
 import com.example.projektmbun.controller.RoutineController
 import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.databinding.ItemFoodBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.RoutineDao
-import com.example.projektmbun.models.daos.StockDao
-import com.example.projektmbun.models.data.food.Food
-import com.example.projektmbun.models.data.food_card.FoodCard
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.RoutineDao
+import com.example.projektmbun.models.local.daos.StockDao
+import com.example.projektmbun.models.data_structure.food.Food
+import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.utils.enums.FoodStateEnum
-import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.animations.Animations
 import com.example.projektmbun.views.fragments.DatePickerFragment
 import com.example.projektmbun.views.fragments.QuantityPickerFragment
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -120,6 +118,7 @@ class FoodAdapter(private var foodSet: List<Food>,
                 FoodStateEnum.SOLID -> "100 g"
                 FoodStateEnum.ALL -> "100 g"
                 FoodStateEnum.PIECE -> "1"
+                else -> "Unbekannt"
             }
 
             foodTitleText.text = foodName

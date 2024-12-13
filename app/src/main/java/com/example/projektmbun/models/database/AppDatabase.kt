@@ -8,25 +8,25 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabase.QueryCallback
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.daos.FoodDao
-import com.example.projektmbun.models.daos.RecipeDao
-import com.example.projektmbun.models.daos.RoutineDao
-import com.example.projektmbun.models.daos.RoutineWithFoodCardsDao
-import com.example.projektmbun.models.daos.StockDao
-import com.example.projektmbun.models.daos.StockWithFoodCardsDao
-import com.example.projektmbun.models.data.food.Food
-import com.example.projektmbun.models.data.food_card.FoodCard
-import com.example.projektmbun.models.data.recipe.DishTypes
-import com.example.projektmbun.models.data.recipe.Equipment
-import com.example.projektmbun.models.data.recipe.Ingredient
-import com.example.projektmbun.models.data.recipe.Instructions
-import com.example.projektmbun.models.data.recipe.Recipe
-import com.example.projektmbun.models.data.routine.Routine
-import com.example.projektmbun.models.data.stock.Stock
+import com.example.projektmbun.BuildConfig
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.RoutineDao
+import com.example.projektmbun.models.local.daos.StockDao
+import com.example.projektmbun.models.data_structure.food_card.FoodCard
+import com.example.projektmbun.models.data_structure.routine.Routine
+import com.example.projektmbun.models.data_structure.stock.Stock
 import com.example.projektmbun.utils.Converters
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
 import java.util.concurrent.Executors
+
+
+val supabase = createSupabaseClient(
+    supabaseUrl = "https://pwxpdcvyohquqmsbcggp.supabase.co",
+    supabaseKey = BuildConfig.SUPABASE_KEY
+) {
+    install(Postgrest)
+}
 
 
 /**
@@ -36,29 +36,19 @@ import java.util.concurrent.Executors
  */
 @Database(
     entities = [
-        Food::class, FoodCard::class, Recipe::class, DishTypes::class, Equipment::class,
-        Ingredient::class, Instructions::class, Routine::class, Stock::class
+        FoodCard::class,
+        Routine::class, Stock::class
     ],
-    version = 37
+    version = 39
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    /**
-     * Accessor for the `FoodDao` to perform operations on the `Food` entity.
-     */
-    abstract fun foodDao(): FoodDao
 
     /**
      * Accessor for the `FoodCardDao` to perform operations on the `FoodCard` entity.
      */
     abstract fun foodCardDao(): FoodCardDao
-
-    /**
-     * Accessor for the `RecipeDao` to perform operations on the `Recipe` entity.
-     */
-    abstract fun recipeDao(): RecipeDao
-
     /**
      * Accessor for the `RoutineDao` to perform operations on the `Routine` entity.
      */
@@ -68,21 +58,6 @@ abstract class AppDatabase : RoomDatabase() {
      * Accessor for the `StockDao` to perform operations on the `Stock` entity.
      */
     abstract fun stockDao(): StockDao
-
-    /**
-     * Accessor for the `FoodCardWithDetailsDao` to retrieve food cards with their associated details.
-     */
-    abstract fun foodCardWithDetailsDao(): FoodCardWithDetailsDao
-
-    /**
-     * Accessor for the `RoutineWithFoodCardsDao` to retrieve routines with their associated food cards.
-     */
-    abstract fun routineWithFoodCardsDao(): RoutineWithFoodCardsDao
-
-    /**
-     * Accessor for the `StockWithFoodCardsDao` to retrieve stocks with their associated food cards.
-     */
-    abstract fun stockWithFoodCardsDao(): StockWithFoodCardsDao
 
     /**
      * Singleton instance of the database.
@@ -131,7 +106,7 @@ abstract class AppDatabase : RoomDatabase() {
                     .setQueryCallback(QueryCallback { sqlQuery, bindArgs ->
                         Log.d("DB_QUERY", "SQL Query: $sqlQuery, Args: $bindArgs")
                     }, Executors.newSingleThreadExecutor())
-                    //.fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration()
                     .createFromAsset("database/appDB.db") // Use a predefined database
                     .build()
                 INSTANCE = instance

@@ -14,13 +14,12 @@ import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.RoutineController
 import com.example.projektmbun.databinding.FragmentRoutinesBinding
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.data.routine.Routine
+import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.views.adapters.RoutineAdapter
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 
@@ -32,7 +31,7 @@ class RoutinesFragment : Fragment() {
     private lateinit var routineController: RoutineController
     private lateinit var routineAdapter: RoutineAdapter
     private lateinit var foodCardController: FoodCardController
-    private lateinit var foodCardWithDetailsDao: FoodCardWithDetailsDao
+    private lateinit var foodService: FoodService
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,10 +44,10 @@ class RoutinesFragment : Fragment() {
         val context = requireContext()
         val routineDao = AppDatabase.getDatabase(context).routineDao()
         val foodCardDao = AppDatabase.getDatabase(context).foodCardDao()
-        foodCardWithDetailsDao = AppDatabase.getDatabase(context).foodCardWithDetailsDao()
+        val foodService = FoodService()
 
         routineController = RoutineController(routineDao, foodCardDao)
-        foodCardController = FoodCardController(foodCardDao, foodCardWithDetailsDao)
+        foodCardController = FoodCardController(foodCardDao, foodService)
 
         // Suchleiste anpassen
         binding.searchBar.searchEditText.hint = "Füge eine Routine hinzu..."

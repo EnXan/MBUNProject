@@ -3,9 +3,8 @@ package com.example.projektmbun.views.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.projektmbun.databinding.InstructionItemBinding
-import com.example.projektmbun.models.data.recipe.Instructions
+import com.example.projektmbun.models.data_structure.recipe.Instructions
 import com.example.projektmbun.utils.GlideApp
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 
@@ -29,7 +28,7 @@ class RecipeInstructionsAdapter(
 
             // Lade das Bild
             GlideApp.with(binding.instructionImage.context)
-                .load(instruction.image)
+                .load(instruction.imageUrl)
                 .skipMemoryCache(true)
                 .transform(RoundedCornersTransformation(20, 0))
                 .into(binding.instructionImage)

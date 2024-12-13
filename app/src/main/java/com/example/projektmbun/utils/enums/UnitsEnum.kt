@@ -1,9 +1,12 @@
 package com.example.projektmbun.utils.enums
 
+import kotlinx.serialization.Serializable
+
 /**
  * Enum of all possible units.
  * @param toBaseMultiplier the multiplier to convert to the base unit.
  */
+@Serializable
 enum class UnitsEnum(val toBaseMultiplier: Double) {
     STUECK(1.0),
     GRAMM(1.0),

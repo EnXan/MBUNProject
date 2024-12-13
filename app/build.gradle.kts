@@ -1,13 +1,16 @@
 import org.apache.tools.ant.util.JavaEnvUtils.VERSION_11
-import org.jetbrains.kotlin.fir.declarations.builder.buildScript
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android") version "2.1.0" // Konsistenz mit der Version im Klassenpfad
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
     id("kotlin-kapt")
-    id("androidx.navigation.safeargs.kotlin") // Safe Args hinzufügen
+    id("androidx.navigation.safeargs.kotlin")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("kotlinx-serialization")
 }
+
+
 
 android {
     namespace = "com.example.projektmbun"
@@ -90,14 +93,22 @@ dependencies {
     implementation (libs.flexbox)
     implementation(libs.materialnumberpicker)
     testImplementation(libs.turbine)
+    implementation(libs.aws.android.sdk.s3)
     implementation(libs.github.glide)
     implementation (libs.fab)
+    implementation (libs.androidx.activity.ktx)
+    implementation (libs.androidx.fragment.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation (libs.androidx.work.runtime.ktx)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.hikaricp)
+    implementation(libs.postgresql)
+    implementation(libs.exposed.kotlin.datetime)
     implementation(libs.androidx.camera.video)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
@@ -109,6 +120,13 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.6.1")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
+    implementation("io.ktor:ktor-client-cio:3.0.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -118,7 +136,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-    testImplementation (libs.mockito.kotlin)
+testImplementation (libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.mockito.android)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

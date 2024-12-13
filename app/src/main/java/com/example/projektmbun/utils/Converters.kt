@@ -2,6 +2,7 @@ package com.example.projektmbun.utils
 
 import androidx.room.TypeConverter
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
+import com.example.projektmbun.utils.enums.FoodStateEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 
 /**
@@ -30,6 +31,17 @@ object Converters {
         return value?.let {
             try {
                 FoodCategoryEnum.valueOf(it)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+    }
+
+    @TypeConverter
+    fun toStateEnum(value: String?): FoodStateEnum? {
+        return value?.let {
+            try {
+                FoodStateEnum.valueOf(it)
             } catch (e: IllegalArgumentException) {
                 null
             }

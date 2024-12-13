@@ -11,19 +11,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.RoutineController
 import com.example.projektmbun.databinding.FragmentMenuBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.daos.RoutineDao
-import com.example.projektmbun.models.data.relations.FoodCardWithDetails
-import com.example.projektmbun.models.data.routine.Routine
+import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.RoutineDao
+import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.SpaceItemDecoration
-import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import com.example.projektmbun.views.adapters.ExpiryDateMenuAdapter
 import com.example.projektmbun.views.adapters.FoodCardMenuAdapter
 import com.example.projektmbun.views.adapters.RoutineMenuAdapter
@@ -39,12 +37,12 @@ class MenuFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var foodCardDao: FoodCardDao
     private lateinit var foodCardController: FoodCardController
-    private lateinit var foodCardWithDetailsDao: FoodCardWithDetailsDao
     private lateinit var foodCardMenuAdapter: FoodCardMenuAdapter
     private lateinit var expiryDateMenuAdapter: ExpiryDateMenuAdapter
     private lateinit var routineMenuAdapter: RoutineMenuAdapter
     private lateinit var routineDao: RoutineDao
     private lateinit var routineController: RoutineController
+    private lateinit var foodService: FoodService
     private lateinit var addFoodButton: Button
 
     override fun onCreateView(
@@ -55,8 +53,8 @@ class MenuFragment : Fragment() {
         // Layout für dieses Fragment festlegen
         val view = binding.root
         foodCardDao = AppDatabase.getDatabase(requireContext()).foodCardDao()
-        foodCardWithDetailsDao = AppDatabase.getDatabase(requireContext()).foodCardWithDetailsDao()
-        foodCardController = FoodCardController(foodCardDao, foodCardWithDetailsDao)
+        foodService = FoodService()
+        foodCardController = FoodCardController(foodCardDao, foodService)
         routineDao = AppDatabase.getDatabase(requireContext()).routineDao()
         routineController = RoutineController(routineDao, foodCardDao)
 

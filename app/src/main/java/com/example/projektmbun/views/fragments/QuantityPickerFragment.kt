@@ -155,6 +155,7 @@ class QuantityPickerFragment(
             FoodStateEnum.LIQUID -> listOf(EMPTY_UNIT, "ml", "l")
             FoodStateEnum.ALL -> listOf(EMPTY_UNIT, "g", "kg", "ml", "l")
             FoodStateEnum.PIECE -> listOf(EMPTY_UNIT)
+            else -> listOf(EMPTY_UNIT)
         }
         Log.d("QuantityPickerFragment", "Generated Units for Category $category: $units")
         return units

@@ -7,16 +7,20 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.RecipeController
 import com.example.projektmbun.databinding.FragmentRecipesBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.data.recipe.RecipeWithDishTypesAndIngredientsAndInstructions
+import com.example.projektmbun.models.cloud.service.RecipeService
+import com.example.projektmbun.models.data_structure.recipe.Recipe
+import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.SpaceItemDecoration
 import com.example.projektmbun.utils.addSearchListener
 import com.example.projektmbun.views.adapters.RecipeAdapter
+import com.github.clans.fab.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,6 +32,7 @@ class RecipesFragment : Fragment() {
     private lateinit var recipeController: RecipeController
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var foodCardDao: FoodCardDao
+    private lateinit var addRecipeButton: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,9 +41,9 @@ class RecipesFragment : Fragment() {
         _binding = FragmentRecipesBinding.inflate(inflater, container, false)
         val view = binding.root
 
+        val recipeService = RecipeService()
         // Initialisiere RecipeController und FoodCardDao
-        val recipeDao = AppDatabase.getDatabase(requireContext()).recipeDao()
-        recipeController = RecipeController(recipeDao)
+        recipeController = RecipeController(recipeService)
         foodCardDao = AppDatabase.getDatabase(requireContext()).foodCardDao()
 
         // Initialisiere RecipeAdapter
@@ -58,11 +63,22 @@ class RecipesFragment : Fragment() {
 
         binding.searchBar.searchEditText.addSearchListener(lifecycleScope) { query ->
             lifecycleScope.launch(Dispatchers.IO) {
-                val results = recipeController.getRecipesByName(query)
+                val results = recipeController.getRecipesByTitle(query)
                 withContext(Dispatchers.Main) {
                     updateRecyclerView(results)
                 }
             }
+        }
+
+        addRecipeButton = binding.addRecipe
+        addRecipeButton.setOnClickListener {
+            it.findNavController().navigate(
+                R.id.action_fragment_recipes_to_fragment_create_recipe,
+                null,
+                navOptions {
+                    popUpTo(R.id.fragment_recipes) { inclusive = true }
+                }
+            )
         }
 
         // Lade die Rezepte basierend auf den FoodCards des Benutzers
@@ -70,7 +86,7 @@ class RecipesFragment : Fragment() {
             val userFoodCards = foodCardDao.getAllFoodCards() // Abfrage der FoodCards aus der lokalen DB
 
             try {
-                val results = recipeController.getAvailableRecipes(userFoodCards)
+                val results = recipeController.getFilteredRecipes(userFoodCards)
                 withContext(Dispatchers.Main) {
                     if (results.isNotEmpty()) {
                         binding.recipeRecyclerView.visibility = View.VISIBLE
@@ -87,6 +103,7 @@ class RecipesFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     binding.recipeRecyclerView.visibility = View.GONE
                     binding.recipeErrorText.text = "Ein Fehler ist aufgetreten"
+                    e.printStackTrace()
                     binding.recipeErrorText.visibility = View.VISIBLE
                 }
             }
@@ -100,7 +117,7 @@ class RecipesFragment : Fragment() {
         _binding = null
     }
 
-    private fun updateRecyclerView(recipeList: List<RecipeWithDishTypesAndIngredientsAndInstructions>) {
+    private fun updateRecyclerView(recipeList: List<Recipe>) {
         recipeAdapter.updateData(recipeList)
     }
 }

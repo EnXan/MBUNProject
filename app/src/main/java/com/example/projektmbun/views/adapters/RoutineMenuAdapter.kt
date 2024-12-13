@@ -1,6 +1,5 @@
 package com.example.projektmbun.views.adapters
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
@@ -8,9 +7,7 @@ import androidx.navigation.navOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.databinding.ItemRoutineSmallBinding
-import com.example.projektmbun.models.data.routine.Routine
-import com.example.projektmbun.models.database.AppDatabase
-import com.example.projektmbun.controller.RoutineController
+import com.example.projektmbun.models.data_structure.routine.Routine
 
 class RoutineMenuAdapter(
     private var routinesSet: List<Routine>,

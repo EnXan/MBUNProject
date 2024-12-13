@@ -26,6 +26,7 @@
     <color name="input_icons_gray">#5A585E</color>
 
     <color name="gray">#888888</color>
+    <color name="light_gray">#E2E2E2</color>
 
     <color name="menu_text">#1C1B1F</color>
     <color name="highlight_yellow">#FFBB00</color>

@@ -64,6 +64,19 @@
         <action
             android:id="@+id/action_recipes_fragment_to_recipe_details_fragment"
             app:destination="@id/fragment_recipe_details"/>
+        <action
+            android:id="@+id/action_fragment_recipes_to_fragment_create_recipe"
+            app:destination="@id/fragment_create_recipe" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_create_recipe"
+        android:label="Create Recipes Fragment"
+        tools:layout="@layout/fragment_create_recipe"
+        android:name="com.example.projektmbun.views.fragments.CreateRecipeFragment">
+        <action
+            android:id="@+id/action_fragment_create_recipe_to_fragment_recipes"
+            app:destination="@id/fragment_recipes" />
     </fragment>
 
     <!-- Additional Fragments -->

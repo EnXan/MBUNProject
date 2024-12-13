@@ -1,6 +1,5 @@
 package com.example.projektmbun.views.adapters
 
-import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,17 +7,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.navigation.findNavController
-import androidx.navigation.navOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
-import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.databinding.ItemExpiryDateBinding
-import com.example.projektmbun.databinding.ItemFoodSmallDarkBinding
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.FoodCardWithDetailsDao
-import com.example.projektmbun.models.data.relations.FoodCardWithDetails
-import com.example.projektmbun.models.database.AppDatabase
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
 import com.example.projektmbun.utils.Converters
 import java.text.SimpleDateFormat
 import java.util.Calendar

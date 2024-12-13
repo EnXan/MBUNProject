@@ -1,7 +1,6 @@
 package com.example.projektmbun.views.adapters
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -10,18 +9,15 @@ import androidx.cardview.widget.CardView
 import androidx.navigation.findNavController
 import androidx.navigation.navOptions
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.projektmbun.R
-import com.example.projektmbun.controller.RecipeController
 import com.example.projektmbun.databinding.RecipePreviewBinding
-import com.example.projektmbun.models.data.recipe.Recipe
-import com.example.projektmbun.models.data.recipe.RecipeWithDishTypesAndIngredientsAndInstructions
+import com.example.projektmbun.models.data_structure.recipe.Recipe
 import com.example.projektmbun.utils.GlideApp
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import java.util.Locale
 
 class RecipeAdapter(
-    private var recipes: List<RecipeWithDishTypesAndIngredientsAndInstructions>,
+    private var recipes: List<Recipe>,
 ) : RecyclerView.Adapter<RecipeAdapter.ViewHolder>() {
 
     // ViewHolder class to hold and bind each recipe item's views
@@ -38,19 +34,19 @@ class RecipeAdapter(
 
 
         // Bind recipe data to views
-        fun bind(recipeWithDetails: RecipeWithDishTypesAndIngredientsAndInstructions, adapter: RecipeAdapter) {
-            val recipe = recipeWithDetails.recipe
+        fun bind(recipe: Recipe, adapter: RecipeAdapter) {
+            val recipe = recipe
 
             titleTextView.text = recipe.title
             nutritionTextView.text = adapter.checkNutrition(recipe)
             descriptionTextView.text = recipe.shortDescription
             durationTextView.text = "${recipe.readyInMinutes} min"
-            timeTextView.text = recipeWithDetails.dishTypes.firstOrNull()?.type ?: "Nicht verfügbar"
+            timeTextView.text = (recipe.dishType.firstOrNull() ?: "Nicht verfügbar").toString()
             priceTextView.text = String.format(Locale.getDefault(), "%.2f €", recipe.pricePerServing).replace('.', ',')
 
             // Load recipe image using Glide
             GlideApp.with(recipeImageView.context)
-                .load(recipe.image)
+                .load(recipe.imageUrl)
                 .transform(RoundedCornersTransformation(20, 0))
                 .into(recipeImageView)
 
@@ -58,7 +54,9 @@ class RecipeAdapter(
             recipeCard.setOnClickListener {
                 val recipeId = recipe.id
                 val bundle = Bundle().apply {
-                    putInt("RECIPE_ID", recipeId)
+                    if (recipeId != null) {
+                        putInt("RECIPE_ID", recipeId)
+                    }
                 }
 
                 it.findNavController().navigate(
@@ -85,7 +83,7 @@ class RecipeAdapter(
     override fun getItemCount(): Int = recipes.size
 
     // Update the recipes data and refresh the adapter
-    fun updateData(newRecipes: List<RecipeWithDishTypesAndIngredientsAndInstructions>) {
+    fun updateData(newRecipes: List<Recipe>) {
         recipes = newRecipes
         notifyDataSetChanged()
     }

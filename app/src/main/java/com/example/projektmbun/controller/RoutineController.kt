@@ -1,16 +1,14 @@
 package com.example.projektmbun.controller
 
-import android.database.sqlite.SQLiteConstraintException
-import android.database.sqlite.SQLiteException
 import android.util.Log
 import com.example.projektmbun.exceptions.RoutineDeletionException
 import com.example.projektmbun.exceptions.RoutineNotUpdatedException
-import com.example.projektmbun.models.daos.FoodCardDao
-import com.example.projektmbun.models.daos.RoutineDao
-import com.example.projektmbun.models.data.food_card.FoodCard
+import com.example.projektmbun.models.local.daos.FoodCardDao
+import com.example.projektmbun.models.local.daos.RoutineDao
+import com.example.projektmbun.models.data_structure.food_card.FoodCard
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
 import com.example.projektmbun.utils.enums.FoodCardStateEnum
-import com.example.projektmbun.models.data.routine.Routine
-import com.example.projektmbun.views.fragments.StockFragment
+import com.example.projektmbun.models.data_structure.routine.Routine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -138,21 +136,21 @@ class RoutineController(
      * @throws NullPointerException if the food card id is null.
      * @throws Exception if an error occurs while removing the food card to the routine.
      */
-    suspend fun removeFoodCardFromRoutine(foodCard: FoodCard) = withContext(Dispatchers.IO) {
-        requireNotNull(foodCard.id) { "FoodCard id must not be null" }
+    suspend fun removeFoodCardFromRoutine(foodCard: FoodCardWithDetails) = withContext(Dispatchers.IO) {
+        requireNotNull(foodCard.foodCard.id) { "FoodCard id must not be null" }
 
         try {
             // remove reference to routine
-            val rowsUpdated = foodCardDao.updateFoodCardRoutineIdByFoodCardId(foodCard.id, null)
+            val rowsUpdated = foodCardDao.updateFoodCardRoutineIdByFoodCardId(foodCard.foodCard.id, null)
             if (rowsUpdated == 0) {
-                Log.e("RoutineController", "No rows updated for FoodCard with id: ${foodCard.id}")
+                Log.e("RoutineController", "No rows updated for FoodCard with id: ${foodCard.foodCard.id}")
                 return@withContext
             }
 
             // get updated food card from database
-            val updatedFoodCard = foodCardDao.getFoodCardById(foodCard.id)
+            val updatedFoodCard = foodCardDao.getFoodCardById(foodCard.foodCard.id)
             if (updatedFoodCard == null) {
-                Log.e("RoutineController", "Failed to fetch updated FoodCard with id: ${foodCard.id}")
+                Log.e("RoutineController", "Failed to fetch updated FoodCard with id: ${foodCard.foodCard.id}")
                 return@withContext
             }
 
@@ -178,12 +176,12 @@ class RoutineController(
     }
 
 
-    private suspend fun changeState(foodCard: FoodCard) {
-        if(foodCard.id != null) {
-            if (foodCard.stockId != null) {
-                foodCardDao.updateStateByFoodCardId(foodCard.id, FoodCardStateEnum.PERMANENT)
+    private suspend fun changeState(foodCard: FoodCardWithDetails) {
+        if(foodCard.foodCard.id != null) {
+            if (foodCard.foodCard.stockId != null) {
+                foodCardDao.updateStateByFoodCardId(foodCard.foodCard.id, FoodCardStateEnum.PERMANENT)
             }
-            foodCardDao.updateStateByFoodCardId(foodCard.id, FoodCardStateEnum.TEMPORARY)
+            foodCardDao.updateStateByFoodCardId(foodCard.foodCard.id, FoodCardStateEnum.TEMPORARY)
         }
     }
 

@@ -11,9 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.projektmbun.controller.RecipeController
 import com.example.projektmbun.databinding.FragmentRecipeDetailsBinding
-import com.example.projektmbun.models.data.recipe.Ingredient
-import com.example.projektmbun.models.data.recipe.Instructions
-import com.example.projektmbun.models.data.recipe.RecipeWithDishTypesAndIngredientsAndInstructions
+import com.example.projektmbun.models.cloud.service.RecipeService
+import com.example.projektmbun.models.data_structure.recipe.Ingredient
+import com.example.projektmbun.models.data_structure.recipe.Instructions
+import com.example.projektmbun.models.data_structure.recipe.Recipe
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.enums.UnitsEnum
 import com.example.projektmbun.views.adapters.RecipeIngredientsAdapter
@@ -30,6 +31,7 @@ class RecipeDetailsFragment : Fragment() {
 
     private var count: Int = 1
     private var ingredients: List<Ingredient> = listOf()
+    private var instructions: List<Instructions> = listOf()
 
     private lateinit var ingredientsAdapter: RecipeIngredientsAdapter
     private lateinit var instructionsAdapter: RecipeInstructionsAdapter
@@ -51,32 +53,42 @@ class RecipeDetailsFragment : Fragment() {
     }
 
     private fun setupController() {
-        val recipeDao = AppDatabase.getDatabase(requireContext()).recipeDao()
-        recipeController = RecipeController(recipeDao)
+        val recipeService = RecipeService()
+        recipeController = RecipeController(recipeService)
     }
 
     private fun loadRecipeData() {
         val recipeId = arguments?.getInt("RECIPE_ID")
         recipeId?.let {
             lifecycleScope.launch {
-                val recipeWithDetails = withContext(Dispatchers.IO) {
+                val recipe = withContext(Dispatchers.IO) {
                     recipeController.getRecipeById(it)
                 }
-                setupUI(recipeWithDetails)
+                if (recipe != null) {
+                    ingredients = withContext(Dispatchers.IO) {
+                        recipeController.getIngredientsByRecipeId(it)
+                    }
+                    instructions = withContext(Dispatchers.IO) {
+                        recipeController.getInstructionsByRecipeId(it)
+                    }
+                    setupUI(recipe)
+                } else {
+                    Log.e("RecipeDetailsFragment", "Recipe is null!")
+                }
             }
         }
     }
 
-    private suspend fun setupUI(recipeWithDetails: RecipeWithDishTypesAndIngredientsAndInstructions) {
-        val ingredientsWithAvailability = checkIngredientAvailability(recipeWithDetails.ingredients)
+    private suspend fun setupUI(recipe: Recipe) {
+        val ingredientsWithAvailability = checkIngredientAvailability(ingredients)
 
         withContext(Dispatchers.Main) {
             setupIngredientsRecyclerView(ingredientsWithAvailability)
-            setupInstructionsRecyclerView(recipeWithDetails.instructions)
+            setupInstructionsRecyclerView(instructions)
 
-            binding.recipeName.text = recipeWithDetails.recipe.title
-            binding.recipeDescription.text = recipeWithDetails.recipe.shortDescription
-            loadRecipeImage(recipeWithDetails.recipe.image)
+            binding.recipeName.text = recipe.title
+            binding.recipeDescription.text = recipe.shortDescription
+            loadRecipeImage(recipe.imageUrl)
 
             setupButtons()
         }
@@ -168,7 +180,7 @@ class RecipeDetailsFragment : Fragment() {
         }
 
         return ingredients.map { ingredient ->
-            val matchingFoodCard = availableFoodCards.find { it.foodId == ingredient.name }
+            val matchingFoodCard = availableFoodCards.find { it.foodId == ingredient.foodId.toString() }
 
             val isAvailable = when (ingredient.unit) {
                 UnitsEnum.UNITLESS -> false // Mengenprüfung für UNITLESS nicht möglich

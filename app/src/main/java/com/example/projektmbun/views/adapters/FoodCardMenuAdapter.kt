@@ -7,7 +7,7 @@ import androidx.navigation.navOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.databinding.ItemFoodSmallDarkBinding
-import com.example.projektmbun.models.data.relations.FoodCardWithDetails
+import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
 import com.example.projektmbun.utils.Converters
 
 

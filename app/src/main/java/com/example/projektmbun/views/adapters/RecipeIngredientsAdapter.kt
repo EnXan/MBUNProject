@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.databinding.ItemIngredientBinding
-import com.example.projektmbun.models.data.recipe.Ingredient
+import com.example.projektmbun.models.data_structure.recipe.Ingredient
 import com.example.projektmbun.utils.Converters
 
 class RecipeIngredientsAdapter(
@@ -19,7 +19,7 @@ class RecipeIngredientsAdapter(
             val (ingredient, isAvailable) = ingredientWithAvailability
 
             // Setze den Namen der Zutat
-            binding.ingredientText.text = ingredient.name
+            binding.ingredientText.text = ingredient.foodId.toString()
 
             // Verfügbarkeit anzeigen (grün/rot)
             binding.ingredientText.setTextColor(
