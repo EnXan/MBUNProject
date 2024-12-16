@@ -22,6 +22,7 @@ import com.example.projektmbun.utils.addSearchListener
 import com.example.projektmbun.views.adapters.RecipeAdapter
 import com.github.clans.fab.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -61,6 +62,10 @@ class RecipesFragment : Fragment() {
         val filterIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_filter)
         binding.searchBar.scanIcon.setImageDrawable(filterIcon)
 
+        binding.searchBar.scanIcon.setOnClickListener {
+            toggleFilter()
+        }
+
         binding.searchBar.searchEditText.addSearchListener(lifecycleScope) { query ->
             lifecycleScope.launch(Dispatchers.IO) {
                 val results = recipeController.getRecipesByTitle(query)
@@ -76,14 +81,15 @@ class RecipesFragment : Fragment() {
                 R.id.action_fragment_recipes_to_fragment_create_recipe,
                 null,
                 navOptions {
-                    popUpTo(R.id.fragment_recipes) { inclusive = true }
+                    popUpTo(R.id.fragment_recipes) { inclusive = false }
                 }
             )
         }
 
         // Lade die Rezepte basierend auf den FoodCards des Benutzers
         lifecycleScope.launch(Dispatchers.IO) {
-            val userFoodCards = foodCardDao.getAllFoodCards() // Abfrage der FoodCards aus der lokalen DB
+            val userFoodCards =
+                foodCardDao.getAllFoodCards() // Abfrage der FoodCards aus der lokalen DB
 
             try {
                 val results = recipeController.getFilteredRecipes(userFoodCards)
@@ -119,5 +125,16 @@ class RecipesFragment : Fragment() {
 
     private fun updateRecyclerView(recipeList: List<Recipe>) {
         recipeAdapter.updateData(recipeList)
+    }
+
+
+    private fun toggleFilter() {
+        val filterLayout =
+            requireView().findViewById<View>(R.id.filter_menu) // Referenz auf das separate Layout
+        if (filterLayout.visibility == View.VISIBLE) {
+            filterLayout.visibility = View.GONE
+        } else {
+            filterLayout.visibility = View.VISIBLE
+        }
     }
 }

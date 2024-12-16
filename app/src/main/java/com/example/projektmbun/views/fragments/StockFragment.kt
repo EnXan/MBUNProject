@@ -21,11 +21,15 @@ import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.models.data_structure.food.Food
+import com.example.projektmbun.models.data_structure.food.FoodLocal
+import com.example.projektmbun.models.local.daos.FoodDao
 import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.SpaceItemDecoration
 import com.example.projektmbun.utils.addSearchListener
 import com.example.projektmbun.views.adapters.FoodAdapter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -49,6 +53,7 @@ class StockFragment : Fragment() {
     private lateinit var stockDao: StockDao
     private lateinit var stockController: StockController
     private lateinit var foodCardDao: FoodCardDao
+    private lateinit var foodDao: FoodDao
     private lateinit var foodCardController: FoodCardController
     private lateinit var foodController: FoodController
 
@@ -70,7 +75,8 @@ class StockFragment : Fragment() {
         _binding = FragmentStockBinding.inflate(inflater, container, false)
         val view = binding.root
         val foodService = FoodService()
-        foodController = FoodController(foodService)
+        foodDao = AppDatabase.getDatabase(requireContext()).foodDao()
+        foodController = FoodController(foodService, foodDao)
 
         foodCardDao = AppDatabase.getDatabase(requireContext()).foodCardDao()
         foodCardController = FoodCardController(foodCardDao, foodService)
@@ -137,6 +143,7 @@ class StockFragment : Fragment() {
                 }
             }
         }
+        observeFoodFlow()
 
         return view
     }
@@ -146,19 +153,31 @@ class StockFragment : Fragment() {
         _binding = null
     }
 
-    private fun updateRecyclerView(foodList: List<Food>) {
+    private fun updateRecyclerView(foodList: List<FoodLocal>) {
         foodAdapter.updateData(foodList)
+    }
+
+    private fun observeFoodFlow() {
+        lifecycleScope.launch {
+            foodDao.getAllFood().distinctUntilChanged()
+                .collect { foodList ->
+                    foodAdapter.updateData(foodList)
+                }
+        }
     }
 
     private suspend fun fetchFoodWithFilters(filters: List<Filter>) {
         val activeFilters = filters.filter { it.isActive }
             .mapNotNull { Converters.getCategoryEnumFromText(it.categoryTextView.text.toString()) }
+
         val dataset = if (activeFilters.isEmpty()) {
+            // Sammle den Flow von `getAllFood`
             foodController.getAllFood()
+                .first() // Holt die aktuelle Liste aus dem Flow (Flow wird hier nicht weiter beobachtet)
         } else {
             val categoryEnum = activeFilters.firstOrNull()
             if (categoryEnum != null) {
-                foodController.getFoodByCategory(categoryEnum)
+                foodController.getFoodByCategory(categoryEnum) // Direktes Ergebnis, kein Flow
             } else {
                 emptyList()
             }
@@ -168,4 +187,5 @@ class StockFragment : Fragment() {
             foodAdapter.updateData(dataset)
         }
     }
+
 }

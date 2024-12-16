@@ -1,0 +1,251 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/filter_menu"
+    android:visibility="gone"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:showDividers="middle">
+
+        <!-- Dauer Filter -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dauer"
+                android:textSize="13sp"
+                android:layout_marginBottom="2dp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_dauer"
+                android:layout_width="wrap_content"
+                app:singleLine="false"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_20"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="20 min"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_40"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:textSize="12sp"
+                    android:text="40 min"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_60"
+                    android:layout_width="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="60 min"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_60more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_greater_then"
+                    android:text="60 min"/>
+
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
+        <!-- Ernährung Filter -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ernährung"
+                android:minWidth="70dp"
+                android:textStyle="bold"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="2dp"
+                android:textSize="13sp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_ernaehrung"
+                android:layout_width="match_parent"
+                app:chipSpacingVertical="-8dp"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_vegan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Vegan"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_vegetarisch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipIcon="@drawable/ic_less_then"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:textSize="12sp"
+                    android:text="Vegetarisch"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_fisch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:textSize="12sp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Fisch"/>
+
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
+        <!-- Schwierigkeit Filter -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Schwierigkeit"
+                android:minWidth="70dp"
+                android:textSize="13sp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="2dp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_schwierigkeit"
+                android:layout_width="match_parent"
+                app:chipSpacingVertical="-8dp"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_einfach"
+                    android:layout_width="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Einfach"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_fortgeschritten"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:textSize="12sp"
+                    android:text="Fortgeschritten"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_erfahren"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Erfahren"/>
+
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
+        <!-- Zeit Filter -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Typ"
+                android:minWidth="70dp"
+                android:textSize="13sp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="2dp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_typ"
+                android:layout_width="match_parent"
+                app:chipSpacingVertical="-8dp"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_fruehstueck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Früstück"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_mittag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:textSize="12sp"
+                    android:text="Mittagessen"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_item_abend"
+                    android:layout_width="wrap_content"
+                    app:chipMinTouchTargetSize="0dp"
+                    android:minHeight="30dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    app:chipIcon="@drawable/ic_less_then"
+                    android:text="Abendbrot"/>
+
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

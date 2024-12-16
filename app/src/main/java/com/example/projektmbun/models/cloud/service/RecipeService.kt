@@ -26,7 +26,7 @@ class RecipeService {
     suspend fun insertFullRecipe(
         recipe: Recipe,
         ingredients: List<Ingredient>,
-        food: Food,
+        food: List<Food>,
         instructions: List<Instructions>,
         equipment: List<Equipment>
     ): Boolean = withContext(Dispatchers.IO) {

@@ -9,15 +9,20 @@ import androidx.room.RoomDatabase.QueryCallback
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.projektmbun.BuildConfig
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.RoutineDao
 import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.data_structure.stock.Stock
+import com.example.projektmbun.models.local.daos.FoodDao
 import com.example.projektmbun.utils.Converters
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.realtime.channel
 import java.util.concurrent.Executors
 
 
@@ -26,8 +31,8 @@ val supabase = createSupabaseClient(
     supabaseKey = BuildConfig.SUPABASE_KEY
 ) {
     install(Postgrest)
+    install(Realtime)
 }
-
 
 /**
  * Represents the main database for the application.
@@ -36,15 +41,19 @@ val supabase = createSupabaseClient(
  */
 @Database(
     entities = [
+        FoodLocal::class,
         FoodCard::class,
         Routine::class, Stock::class
     ],
-    version = 39
+    version = 41
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
-
+    /**
+     * Accessor for the `FoodDao` to perform operations on the `FoodLocal` entity.
+     */
+    abstract fun foodDao(): FoodDao
     /**
      * Accessor for the `FoodCardDao` to perform operations on the `FoodCard` entity.
      */
@@ -106,7 +115,7 @@ abstract class AppDatabase : RoomDatabase() {
                     .setQueryCallback(QueryCallback { sqlQuery, bindArgs ->
                         Log.d("DB_QUERY", "SQL Query: $sqlQuery, Args: $bindArgs")
                     }, Executors.newSingleThreadExecutor())
-                    .fallbackToDestructiveMigration()
+                    //.fallbackToDestructiveMigration()
                     .createFromAsset("database/appDB.db") // Use a predefined database
                     .build()
                 INSTANCE = instance

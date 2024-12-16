@@ -55,6 +55,7 @@
             app:destination="@id/fragment_routine" />
     </fragment>
 
+
     <!-- Recipes Fragment -->
     <fragment
         android:id="@+id/fragment_recipes"

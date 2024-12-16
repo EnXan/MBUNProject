@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- FloatingActionButton zum Schließen -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/close_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        app:fabSize="mini"
+        android:src="@drawable/ic_close"
+        android:contentDescription="close"
+        app:backgroundTint="@color/status_danger"
+        app:tint="@android:color/white" />
+
+
+<ScrollView
     android:id="@+id/fragment_create_recipe"
     android:layout_width="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingTop="50dp"
     android:layout_height="match_parent"
     android:paddingHorizontal="26dp">
-
-
 
 
     <LinearLayout
@@ -901,7 +918,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Utensilien"
+                    android:text="Equipment"
                     android:textSize="13sp"
                     android:textColor="@color/black"
                     android:layout_marginBottom="5dp" />
@@ -909,7 +926,7 @@
                 <com.google.android.flexbox.FlexboxLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/utensils_container"
+                    android:id="@+id/instruction_equipment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
@@ -919,7 +936,7 @@
 
                     <!-- Plus-Button -->
                     <ImageButton
-                        android:id="@+id/add_utensil_button"
+                        android:id="@+id/add_equipment_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_add_black"
@@ -982,3 +999,4 @@
 
     </LinearLayout>
 </ScrollView>
+</FrameLayout>

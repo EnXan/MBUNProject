@@ -1,5 +1,7 @@
 package com.example.projektmbun.models.data_structure.food
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import com.example.projektmbun.utils.enums.FoodStateEnum
 import kotlinx.serialization.Serializable
@@ -14,6 +16,17 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Food(
+    val name: String,
+    val category: FoodCategoryEnum,
+    val state: FoodStateEnum
+)
+
+
+@Entity(
+    tableName = "food"
+)
+data class FoodLocal(
+    @PrimaryKey
     val name: String,
     val category: FoodCategoryEnum,
     val state: FoodStateEnum

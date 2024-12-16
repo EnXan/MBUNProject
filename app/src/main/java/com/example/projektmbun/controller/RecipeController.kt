@@ -12,11 +12,11 @@ import com.example.projektmbun.models.data_structure.recipe.Recipe
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import com.example.projektmbun.utils.enums.FoodStateEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
-import com.example.projektmbun.views.fragments.TemporaryEquipment
-import com.example.projektmbun.views.fragments.TemporaryFood
-import com.example.projektmbun.views.fragments.TemporaryIngredient
-import com.example.projektmbun.views.fragments.TemporaryInstruction
-import com.example.projektmbun.views.fragments.TemporaryRecipe
+import com.example.projektmbun.views.temp_data_models.TemporaryEquipment
+import com.example.projektmbun.views.temp_data_models.TemporaryFood
+import com.example.projektmbun.views.temp_data_models.TemporaryIngredient
+import com.example.projektmbun.views.temp_data_models.TemporaryInstruction
+import com.example.projektmbun.views.temp_data_models.TemporaryRecipe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -34,7 +34,7 @@ class RecipeController(private val recipeService: RecipeService) {
         ingredients: List<TemporaryIngredient>,
         instructions: List<TemporaryInstruction>,
         equipment: List<TemporaryEquipment>,
-        food: TemporaryFood
+        food: List<TemporaryFood>
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             // Mappe die Daten in die endgültigen Modelle
@@ -91,11 +91,14 @@ class RecipeController(private val recipeService: RecipeService) {
                 )
             }
 
-            val mappedFood = Food(
-                name = food.name,
-                category = food.category ?: FoodCategoryEnum.UNBEKANNT,
-                state = food.state ?: FoodStateEnum.UNBEKANNT
-            )
+            val mappedFood = food.map { tempFood ->
+                Food(
+                    name = tempFood.name,
+                    category = tempFood.category ?: FoodCategoryEnum.UNBEKANNT,
+                    state = tempFood.state ?: FoodStateEnum.UNBEKANNT
+                )
+            }
+
 
             // Übergib alle Daten an den RecipeService
             val success = recipeService.insertFullRecipe(
@@ -203,9 +206,10 @@ class RecipeController(private val recipeService: RecipeService) {
                 Log.e("RecipeController", "Failed to calculate missing ingredients for recipe due to null value: ${recipe.title}")
             }
 
-            if (missingIngredients!! <= maximumMissingIngredients) {
+            if (missingIngredients!! >= maximumMissingIngredients) { //TODO: Muss wieder zu kleiner als !!!!!!!!
                 Pair(recipe, matchingIngredients)
             } else {
+                Log.d("RecipeController", "Missing ingredients are: $missingIngredients and maximum is: $maximumMissingIngredients")
                 Log.d("RecipeController", "Recipe ${recipe.title} does not meet the condition.")
                 null
             }

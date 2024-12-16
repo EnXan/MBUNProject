@@ -3,6 +3,7 @@ package com.example.projektmbun.models.data_structure.food_card
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.data_structure.stock.Stock
 import com.example.projektmbun.utils.enums.FoodCardStateEnum
@@ -28,6 +29,12 @@ import com.example.projektmbun.utils.enums.UnitsEnum
     tableName = "food_card",
     foreignKeys = [
         ForeignKey(
+            entity = FoodLocal::class,
+            parentColumns = ["name"],
+            childColumns = ["foodId"],
+            onDelete = ForeignKey.SET_NULL
+        ),
+        ForeignKey(
             entity = Routine::class,
             parentColumns = ["id"],
             childColumns = ["routineId"],
@@ -42,7 +49,7 @@ import com.example.projektmbun.utils.enums.UnitsEnum
 )
 data class FoodCard(
     @PrimaryKey(autoGenerate = true)
-    val id: Int?,
+    val id: Int? = 0,
     val foodId: String,          // Refers to food in food table
     var quantity: Double,
     var unit: UnitsEnum,

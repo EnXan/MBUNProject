@@ -22,6 +22,7 @@ import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.RoutineDao
 import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.data_structure.food.Food
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.utils.enums.FoodStateEnum
 import com.example.projektmbun.models.database.AppDatabase
@@ -48,7 +49,7 @@ data class SelectedFoodHolder(val selectedDate: String? = null, val quantity: St
  * @constructor Creates a FoodAdapter with a given set of food items.
  * @param foodSet Array of Food objects to display in the RecyclerView.
  */
-class FoodAdapter(private var foodSet: List<Food>,
+class FoodAdapter(private var foodSet: List<FoodLocal>,
                   context: Context,
                   private val showFinishButton: Boolean,
                   private val routineId: Int?,
@@ -92,7 +93,7 @@ class FoodAdapter(private var foodSet: List<Food>,
          * @param onDataUpdated Callback function for updating selected date and quantity in the adapter.
          */
         fun bind(
-            food: Food,
+            food: FoodLocal,
             dataHolder: SelectedFoodHolder?,
             onDataUpdated: (String, (SelectedFoodHolder) -> SelectedFoodHolder) -> Unit,
             routineController: RoutineController,
@@ -267,8 +268,9 @@ class FoodAdapter(private var foodSet: List<Food>,
      * Updates the food set and notifies the adapter that the data has changed.
      * @param newFoodSet new list of foods, displayed in the adapter
      */
-    fun updateData(newFoodSet: List<Food>) {
+    fun updateData(newFoodSet: List<FoodLocal>) {
         foodSet = newFoodSet
+        Log.d("FoodAdapter", "Updated food set: $foodSet")
         notifyDataSetChanged() // Benachrichtige die RecyclerView, dass sich die Daten geändert haben
     }
 
