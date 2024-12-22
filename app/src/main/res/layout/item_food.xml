@@ -85,7 +85,6 @@
             android:id="@+id/btn_select_quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
             android:textAlignment="textStart"
             android:textSize="13sp"
             android:fontFamily="sans-serif-light"

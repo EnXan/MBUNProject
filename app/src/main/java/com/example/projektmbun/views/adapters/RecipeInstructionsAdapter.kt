@@ -1,6 +1,7 @@
 package com.example.projektmbun.views.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.databinding.InstructionItemBinding
@@ -17,34 +18,29 @@ class RecipeInstructionsAdapter(
 
         fun bind(instruction: Instructions) {
             // Setze Schrittanzahl
-            binding.instructionStep.text = "Step ${instruction.step}"
+            binding.instructionStep.text = "Schritt ${instruction.step}"
 
-            // Beschreibung aufteilen
-            val fullText = instruction.description
-            val (textHalf, textFull) = splitDescription(fullText)
+            // Beschreibung
+            binding.instructionDesc.text = instruction.description
 
-            binding.instructionDescHalf.text = textHalf
-            binding.instructionDescFull.text = textFull
+            // Prüfe, ob eine imageUrl vorhanden ist
+            if (!instruction.imageUrl.isNullOrBlank()) {
+                // Wenn eine URL vorhanden ist, zeige das Bild
+                binding.instructionImage.visibility = View.VISIBLE
 
-            // Lade das Bild
-            GlideApp.with(binding.instructionImage.context)
-                .load(instruction.imageUrl)
-                .skipMemoryCache(true)
-                .transform(RoundedCornersTransformation(20, 0))
-                .into(binding.instructionImage)
-        }
-
-        // Hilfsfunktion zum Teilen der Beschreibung
-        private fun splitDescription(description: String): Pair<String, String> {
-            val splitIndex = description.indexOf('.', description.length / 2) + 1
-            return if (splitIndex > 0) {
-                val textHalf = description.substring(0, splitIndex)
-                val textFull = description.substring(splitIndex).trim()
-                textHalf to textFull
+                // Lade das Bild mit Glide
+                GlideApp.with(binding.instructionImage.context)
+                    .load(instruction.imageUrl)
+                    .skipMemoryCache(true)
+                    .transform(RoundedCornersTransformation(20, 0))
+                    .into(binding.instructionImage)
             } else {
-                description to ""
+                // Wenn keine URL vorhanden ist, verstecke das ImageView
+                binding.instructionImage.visibility = View.GONE
             }
         }
+
+
     }
 
     // Erstellt einen neuen ViewHolder

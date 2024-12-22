@@ -23,6 +23,7 @@
         android:theme="@style/AppTheme"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33">
+        <activity android:name=".views.activities.ScanActivity" />
         <activity
             android:name=".views.activities.MainActivity"
             android:exported="true"

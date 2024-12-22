@@ -18,7 +18,10 @@ import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.views.adapters.RoutineAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,6 +68,8 @@ class RoutinesFragment : Fragment() {
             recyclerView.adapter = routineAdapter
         }
 
+        observeRoutineCounter()
+
         // "+"-Button Listener hinzufügen
         binding.searchBar.scanIcon.setOnClickListener {
             val routineName = binding.searchBar.searchEditText.text.toString().trim()
@@ -107,6 +112,19 @@ class RoutinesFragment : Fragment() {
             }
         }
     }
+
+    private fun observeRoutineCounter() {
+        lifecycleScope.launch {
+            routineController.getRoutineCountFlow()
+                .distinctUntilChanged()
+                .collect { count ->
+                    withContext(Dispatchers.Main) {
+                        binding.btnFoodCounter.text = count.toString() // Setze den aktualisierten Wert
+                    }
+                }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

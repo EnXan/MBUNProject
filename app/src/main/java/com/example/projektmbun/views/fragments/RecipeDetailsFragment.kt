@@ -66,6 +66,7 @@ class RecipeDetailsFragment : Fragment() {
                 }
                 if (recipe != null) {
                     ingredients = withContext(Dispatchers.IO) {
+                        Log.d("RecipeDetailsFragment", "Ingredients: $ingredients")
                         recipeController.getIngredientsByRecipeId(it)
                     }
                     instructions = withContext(Dispatchers.IO) {
@@ -150,7 +151,7 @@ class RecipeDetailsFragment : Fragment() {
         lifecycleScope.launch {
             val updatedIngredientsAmount = ingredients.map { ingredient ->
                 val newAmount = when (ingredient.unit) {
-                    UnitsEnum.STUECK, UnitsEnum.UNITLESS -> ingredient.amount ?: 0.0 // Stück bleibt unverändert
+                    UnitsEnum.STUECK, UnitsEnum.UNBEKANNT -> ingredient.amount ?: 0.0 // Stück bleibt unverändert
                     else -> (ingredient.amount ?: 0.0) * count // Normal multiplizieren
                 }
                 ingredient.copy(amount = newAmount)
@@ -175,27 +176,38 @@ class RecipeDetailsFragment : Fragment() {
 
 
     private suspend fun checkIngredientAvailability(ingredients: List<Ingredient>): List<Pair<Ingredient, Boolean>> {
+        // Hole alle FoodCards aus der Datenbank
         val availableFoodCards = withContext(Dispatchers.IO) {
             AppDatabase.getDatabase(requireContext()).foodCardDao().getAllFoodCards()
         }
 
+        // Gruppiere FoodCards nach foodId und summiere die Mengen in der Basiseinheit
+        val mergedFoodCards = availableFoodCards
+            .groupBy { it.foodId }
+            .mapValues { (_, foodCards) ->
+                foodCards.fold(0.0) { total, foodCard ->
+                    total + foodCard.unit.convertToBase(foodCard.quantity)
+                }
+            }
+
         return ingredients.map { ingredient ->
-            val matchingFoodCard = availableFoodCards.find { it.foodId == ingredient.foodId.toString() }
+            // Hole die verfügbare Menge aus den zusammengeführten FoodCards
+            val availableAmountInBaseUnit = mergedFoodCards[ingredient.foodId.toString()] ?: 0.0
 
             val isAvailable = when (ingredient.unit) {
-                UnitsEnum.UNITLESS -> false // Mengenprüfung für UNITLESS nicht möglich
-                UnitsEnum.STUECK -> matchingFoodCard?.let { foodCard ->
-                    foodCard.quantity >= (ingredient.amount ?: 0.0) // Vergleiche Stück direkt
-                } ?: false
-                else -> matchingFoodCard?.let { foodCard ->
+                UnitsEnum.UNBEKANNT -> false // Mengenprüfung für unbekannte Einheiten nicht möglich
+                UnitsEnum.STUECK -> availableAmountInBaseUnit >= (ingredient.amount ?: 0.0)
+                else -> {
+                    // Konvertiere die benötigte Menge in die Basiseinheit
                     val requiredAmountInBaseUnit = ingredient.unit.convertToBase(ingredient.amount ?: 0.0)
-                    val availableAmountInBaseUnit = foodCard.unit.convertToBase(foodCard.quantity)
                     availableAmountInBaseUnit >= requiredAmountInBaseUnit
-                } ?: false
+                }
             }
 
             ingredient to isAvailable
         }
     }
+
+
 
 }

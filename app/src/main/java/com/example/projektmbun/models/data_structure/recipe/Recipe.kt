@@ -1,7 +1,7 @@
 package com.example.projektmbun.models.data_structure.recipe
 
+import com.example.projektmbun.utils.enums.DifficultyEnum
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 /**
  * Represents a recipe in the database, including its metadata, dietary information, and other attributes.

@@ -3,7 +3,6 @@ package com.example.projektmbun.models.data_structure.food
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
-import com.example.projektmbun.utils.enums.FoodStateEnum
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,20 +13,10 @@ import kotlinx.serialization.Serializable
  * @property category The category of the food item, defined in `FoodCategoryEnum` (e.g., vegetable, fruit, dairy).
  * @property state The state of the food item, defined in `FoodStateEnum` (e.g., fresh, frozen, canned).
  */
-@Serializable
-data class Food(
-    val name: String,
-    val category: FoodCategoryEnum,
-    val state: FoodStateEnum
-)
-
-
-@Entity(
-    tableName = "food"
-)
+@Serializable // Für Supabase und JSON-Serialisierung
+@Entity(tableName = "food") // Für Room-Datenbank
 data class FoodLocal(
     @PrimaryKey
-    val name: String,
-    val category: FoodCategoryEnum,
-    val state: FoodStateEnum
+    val name: String, // Primärschlüssel
+    val category: FoodCategoryEnum = FoodCategoryEnum.UNBEKANNT
 )

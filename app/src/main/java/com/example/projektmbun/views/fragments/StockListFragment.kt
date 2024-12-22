@@ -1,6 +1,7 @@
 package com.example.projektmbun.views.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ import com.example.projektmbun.utils.SpaceItemDecoration
 import com.example.projektmbun.utils.addSearchListener
 import com.example.projektmbun.views.adapters.StockFoodCardListAdapter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -70,6 +72,8 @@ class StockListFragment : Fragment() {
             }
         }
 
+        observeFoodCounter()
+
         closeButton = binding.btnCloseStocklist
         closeButton.setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -96,6 +100,7 @@ class StockListFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             // Lade FoodCards aus der Vorratsliste
             val stockFoodCardWithFoodList = foodCardController.getFoodCardsInStock()
+            Log.d("StockListFragment", "FoodCards loaded: $stockFoodCardWithFoodList")
 
             withContext(Dispatchers.Main) {
                 stockFoodCardListAdapter.updateData(stockFoodCardWithFoodList)
@@ -103,19 +108,23 @@ class StockListFragment : Fragment() {
         }
     }
 
-    private fun addFoodCardToStock(foodCard: FoodCard) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            stockController.addFoodCardToStock(foodCard, 1)
-            loadFoodCards() // UI aktualisieren
+    private fun observeFoodCounter() {
+        lifecycleScope.launch {
+            try {
+                foodCardDao.getFoodCardCountFlow()
+                    .distinctUntilChanged()
+                    .collect { count ->
+                        withContext(Dispatchers.Main) {
+                            // Überprüfe, ob die View noch existiert
+                            binding?.btnFoodCounter?.text = count.toString()
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("StockFragment", "Error observing food counter", e)
+            }
         }
     }
 
-    private fun removeFoodCardFromStock(foodCardId: Int) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            foodCardController.removeFoodCardFromStock(foodCardId)
-            loadFoodCards() // UI aktualisieren
-        }
-    }
 
 
     override fun onResume() {

@@ -1,10 +1,11 @@
 package com.example.projektmbun.views.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -20,7 +21,6 @@ import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.database.AppDatabase
-import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.local.daos.FoodDao
 import com.example.projektmbun.utils.Converters
@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class Filter(val name: Button, val categoryTextView: TextView, var isActive: Boolean) {
+data class Filter(val name: ImageButton, val categoryTextView: TextView, var isActive: Boolean) {
     fun toggleActive(active: Boolean) {
         isActive = active
         name.isSelected = active
@@ -125,6 +125,8 @@ class StockFragment : Fragment() {
             fetchFoodWithFilters(filters)
         }
 
+        observeFoodCounter()
+
         filters.forEach { filter ->
             filter.name.setOnClickListener {
                 if (filter.isActive) {
@@ -153,9 +155,28 @@ class StockFragment : Fragment() {
         _binding = null
     }
 
-    private fun updateRecyclerView(foodList: List<FoodLocal>) {
-        foodAdapter.updateData(foodList)
+    private fun updateRecyclerView(foodLocalList: List<FoodLocal>) {
+        foodAdapter.updateData(foodLocalList)
     }
+
+    private fun observeFoodCounter() {
+        lifecycleScope.launch {
+            try {
+                foodCardDao.getFoodCardCountFlow()
+                    .distinctUntilChanged()
+                    .collect { count ->
+                        withContext(Dispatchers.Main) {
+                            // Überprüfe, ob die View noch existiert
+                            binding?.btnFoodCounter?.text = count.toString()
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("StockFragment", "Error observing food counter", e)
+            }
+        }
+    }
+
+
 
     private fun observeFoodFlow() {
         lifecycleScope.launch {
@@ -168,12 +189,13 @@ class StockFragment : Fragment() {
 
     private suspend fun fetchFoodWithFilters(filters: List<Filter>) {
         val activeFilters = filters.filter { it.isActive }
-            .mapNotNull { Converters.getCategoryEnumFromText(it.categoryTextView.text.toString()) }
+            .mapNotNull { Converters.toCategoryEnum(it.categoryTextView.text.toString()) }
 
         val dataset = if (activeFilters.isEmpty()) {
             // Sammle den Flow von `getAllFood`
-            foodController.getAllFood()
-                .first() // Holt die aktuelle Liste aus dem Flow (Flow wird hier nicht weiter beobachtet)
+            val result = foodController.getAllFood().first() // Aktuelle Liste abrufen
+            Log.d("CreateRecipeFragment", "Ergebnis von getAllFood: $result") // Ergebnis loggen
+            result
         } else {
             val categoryEnum = activeFilters.firstOrNull()
             if (categoryEnum != null) {

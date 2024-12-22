@@ -13,6 +13,7 @@ enum class UnitsEnum(val toBaseMultiplier: Double) {
     KILOGRAMM(1000.0),
     LITER(1000.0),
     MILLILITER(1.0),
+    ZEHE(1.0),
     TEELOEFEL(5.0),
     ESSLOEFEL(15.0),
     PRISE(0.2),
@@ -22,7 +23,7 @@ enum class UnitsEnum(val toBaseMultiplier: Double) {
     NACH_GESCHMACK(1.0),
     DOSE(1.0),
     BECHER(1.0),
-    UNITLESS(1.0);
+    UNBEKANNT(1.0);
 
     /**
      * Converts a quantity to the base unit.

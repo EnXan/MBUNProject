@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.wasabeef.glide.transformations)
     implementation(libs.wheelpicker)
     implementation (libs.glide.v4151)
+    implementation(libs.litert)
+    implementation(libs.litert.support.api)
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.robolectric)

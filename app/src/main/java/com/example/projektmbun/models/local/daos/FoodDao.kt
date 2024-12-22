@@ -22,6 +22,9 @@ interface FoodDao {
     @Query("DELETE FROM food WHERE name = :foodName")
     suspend fun deleteFoodByName(foodName: String)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllFood(foods: List<FoodLocal>)
+
     @Query("SELECT * FROM food")
     fun getAllFood(): Flow<List<FoodLocal>>
 

@@ -2,7 +2,6 @@ package com.example.projektmbun.models.data_structure.relations
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.data_structure.stock.Stock

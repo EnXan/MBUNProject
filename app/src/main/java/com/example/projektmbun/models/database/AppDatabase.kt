@@ -45,9 +45,8 @@ val supabase = createSupabaseClient(
         FoodCard::class,
         Routine::class, Stock::class
     ],
-    version = 41
+    version = 2
 )
-@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     /**
@@ -100,11 +99,12 @@ abstract class AppDatabase : RoomDatabase() {
          * @return The singleton instance of `AppDatabase`.
          */
         fun getDatabase(context: Context): AppDatabase {
+            //context.deleteDatabase("appDB")
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "appDB"
+                    "persistentDB"
                 )
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onOpen(db: SupportSQLiteDatabase) {
@@ -115,8 +115,7 @@ abstract class AppDatabase : RoomDatabase() {
                     .setQueryCallback(QueryCallback { sqlQuery, bindArgs ->
                         Log.d("DB_QUERY", "SQL Query: $sqlQuery, Args: $bindArgs")
                     }, Executors.newSingleThreadExecutor())
-                    //.fallbackToDestructiveMigration()
-                    .createFromAsset("database/appDB.db") // Use a predefined database
+                    .createFromAsset("database/persistentDB.db") // Use a predefined database
                     .build()
                 INSTANCE = instance
                 instance

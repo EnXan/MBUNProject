@@ -7,18 +7,20 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class FoodCategoryEnum {
-    GEMUESE,
-    OBST,
+    MILCHPRODUKT,
     FLEISCH,
     GETREIDE,
-    MILCHPRODUKT,
+    GEMUESE,
+    OBST,
+    SOSSE,
     FISCH,
+    GETRAENK,
+    EI,
     HUELSENFRUCHT,
     SAMEN,
     NUSS,
     OEL,
     FETT,
-    EI,
     GEWUERZ,
     UNBEKANNT
 }

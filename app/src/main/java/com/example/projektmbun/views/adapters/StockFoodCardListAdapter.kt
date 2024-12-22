@@ -73,15 +73,15 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
             foodCardController: FoodCardController
         ) {
             val foodCard = foodCardWithDetails.foodCard
-            val foodName = foodCardWithDetails.food.name
+            val foodName = foodCardWithDetails.foodLocal.name
             var selectedDate = dataHolder?.selectedDate ?: itemView.context.getString(R.string.placeholder_expiryDate)
             var selectedQuantity = dataHolder?.quantity
-                ?: "${foodCard.quantity} ${Converters.getUnitTextFromEnum(foodCard.unit)}"
-            Log.d("StockFoodCardAdapter", "unit: ${foodCard.unit}")
+                ?: "${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
+            Log.d("StockFoodCardAdapter", "unit: $selectedQuantity")
 
             // Set food data to the view
             binding.foodTitle.text = foodName
-            binding.foodCategory.text = foodCardWithDetails.food.category.name
+            binding.foodCategory.text = foodCardWithDetails.foodLocal.category.name
             btnSelectedDateView.text = selectedDate
             txtQuantityView.text = selectedQuantity
 
@@ -124,6 +124,7 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
 
                 if (fragmentManager != null) {
                     val quantityParts = selectedQuantity.split(" ")
+                    Log.d("StockFoodCardAdapter", "quantityParts: $quantityParts")
                     val lastQuantity = quantityParts.firstOrNull()?.toDoubleOrNull() ?: 1.0
 
                     // Stelle sicher, dass foodCard.unit ein UnitsEnum ist
@@ -131,26 +132,12 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
 
                     val quantityPickerFragment = QuantityPickerFragment(
                         listener = { quantity, measureUnit ->
-                            val unitEnum = try {
-                                measureUnit?.let { UnitsEnum.valueOf(it.uppercase()) } ?: UnitsEnum.STUECK
-                            } catch (e: IllegalArgumentException) {
-                                UnitsEnum.UNITLESS // Fallback auf UNITLESS bei ungültigem String
-                            }
+                            val unitEnum = measureUnit ?: UnitsEnum.UNBEKANNT
 
-                            // Einheit so formatieren wie im zweiten Codeblock
                             selectedQuantity = when (measureUnit) {
-                                null, " " -> {
-                                    // Keine Einheit, zeige nur die Menge
-                                    "${quantity?.toInt()}"
-                                }
-                                "g" -> {
-                                    // Wenn die Einheit "g" ist, zeige ohne Dezimalstellen
-                                    "${quantity?.toInt()} $measureUnit"
-                                }
-                                else -> {
-                                    // Standardanzeige
-                                    "$quantity $measureUnit"
-                                }
+                                null, UnitsEnum.UNBEKANNT -> "${quantity?.toInt()}"
+                                UnitsEnum.GRAMM -> "${quantity?.toInt()} ${Converters.fromUnitEnum(measureUnit)}"
+                                else -> "$quantity ${Converters.fromUnitEnum(measureUnit)}"
                             }
 
                             txtQuantityView.text = selectedQuantity
@@ -166,8 +153,7 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
                                 foodCardController.addFoodCard(foodCard)
                             }
                         },
-                        initialQuantityString = selectedQuantity,
-                        foodState = foodCardWithDetails.food.state
+                        initialQuantityString = selectedQuantity
                     )
                     quantityPickerFragment.show(fragmentManager, "quantityPicker")
                 }
@@ -200,7 +186,8 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val foodCardWithDetails = foodCardSet[position]
-        val selectedFoodCardHolder = selectedFoodCardMap[foodCardWithDetails.food.name] ?: SelectedFoodCardHolder()
+        Log.d("StockFoodCardAdapter", "Binding Item at position $position: ${foodCardWithDetails.foodLocal.name}, Quantity: ${foodCardWithDetails.foodCard.quantity}")
+        val selectedFoodCardHolder = selectedFoodCardMap[foodCardWithDetails.foodLocal.name] ?: SelectedFoodCardHolder()
 
         holder.bind(foodCardWithDetails, selectedFoodCardHolder, { foodName, updateFunction ->
             val currentHolder = selectedFoodCardMap[foodName] ?: SelectedFoodCardHolder()
@@ -210,20 +197,56 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
     }
 
     fun updateData(newFoodSet: List<FoodCardWithDetails>) {
+        Log.d("StockFoodCardAdapter", "Starting updateData...")
+
+        // Loggen der eingehenden Daten
+        Log.d("StockFoodCardAdapter", "New foodCardSet size: ${newFoodSet.size}")
+        newFoodSet.forEach { item ->
+            Log.d(
+                "StockFoodCardAdapter",
+                "New Item: ID=${item.foodCard.id}, Name=${item.foodLocal.name}, Quantity=${item.foodCard.quantity}, Unit=${item.foodCard.unit}"
+            )
+        }
+
         foodCardSet = newFoodSet
         selectedFoodCardMap.clear()
 
+        // Verarbeiten und Loggen der ausgewählten Karten
         newFoodSet.forEach { foodCardWithDetails ->
             val foodCard = foodCardWithDetails.foodCard
             val expiryDate = foodCard.expiryDate ?: "Haltbar bis"
 
-            selectedFoodCardMap[foodCardWithDetails.food.name] = SelectedFoodCardHolder(
+            // Verwenden der ID als Schlüssel
+            selectedFoodCardMap[foodCard.id.toString()] = SelectedFoodCardHolder(
                 selectedDate = expiryDate,
-                quantity = "${foodCard.quantity} ${Converters.getUnitTextFromEnum(foodCard.unit)}"
+                quantity = "${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
+            )
+
+            // Log für jeden Eintrag in der Map
+            Log.d(
+                "StockFoodCardAdapter",
+                "Mapped: ID=${foodCard.id}, Name=${foodCardWithDetails.foodLocal.name}, ExpiryDate=$expiryDate, Quantity=${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
             )
         }
+
+        // Log des finalen Mappings
+        Log.d("StockFoodCardAdapter", "Final selectedFoodCardMap: $selectedFoodCardMap")
+
+        // Log für aktualisierte Daten
+        Log.d("StockFoodCardAdapter", "Updated foodCardSet:")
+        newFoodSet.forEach { item ->
+            Log.d(
+                "StockFoodCardAdapter",
+                "Item: ID=${item.foodCard.id}, Name=${item.foodLocal.name}, Quantity=${item.foodCard.quantity}, Unit=${item.foodCard.unit}"
+            )
+        }
+
+        // Benachrichtigung an den RecyclerView
         notifyDataSetChanged()
+        Log.d("StockFoodCardAdapter", "Data update complete. Adapter notified.")
     }
+
+
 
     override fun getItemCount(): Int {
         return foodCardSet.size

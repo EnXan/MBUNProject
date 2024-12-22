@@ -7,7 +7,8 @@ import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.models.database.supabase
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
-import com.example.projektmbun.utils.enums.FoodStateEnum
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.channel
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-class RecipeListener(private val context: Context) {
+class FoodListener(private val context: Context) {
 
     private val recipeService: RecipeService = RecipeService()
     private val foodDao = AppDatabase.getDatabase(context).foodDao()
@@ -40,14 +41,14 @@ class RecipeListener(private val context: Context) {
                         is PostgresAction.Insert -> handleFoodInsert(change.record)
                         is PostgresAction.Update -> handleFoodUpdate(change.record)
                         is PostgresAction.Delete -> handleFoodDelete(change.oldRecord)
-                        else -> Log.d("RecipeListener", "Unbekannte Aktion: $change")
+                        else -> Log.d("FoodListener", "Unbekannte Aktion: $change")
                     }
                 }.launchIn(scope)
 
                 foodChannel.subscribe()
-                Log.d("RecipeListener", "Erfolgreich auf Rezeptänderungen abonniert")
+                Log.d("FoodListener", "Erfolgreich auf Rezeptänderungen abonniert")
             } catch (e: Exception) {
-                Log.e("RecipeListener", "Fehler beim Abonnieren der Rezeptänderungen: ${e.message}")
+                Log.e("FoodListener", "Fehler beim Abonnieren der Rezeptänderungen: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -62,12 +63,9 @@ class RecipeListener(private val context: Context) {
             Log.d("RecipeListener", "Extracted Category String: $categoryString")
             val foodName = jsonObject.optString("name", null)
             Log.d("RecipeListener", "Extracted Name String: $foodName")
-            val stateString = jsonObject.optString("state", null)
-            Log.d("RecipeListener", "Extracted State String: $stateString")
 
             // Konvertiere die Strings zu Enums
             val category = categoryString?.let { FoodCategoryEnum.valueOf(it) } ?: FoodCategoryEnum.UNBEKANNT
-            val state = stateString?.let { FoodStateEnum.valueOf(it) } ?: FoodStateEnum.UNBEKANNT
 
             if (foodName.isNullOrBlank()) {
                 Log.e("FoodListener", "Food name is null or empty. Skipping insert.")
@@ -77,7 +75,6 @@ class RecipeListener(private val context: Context) {
             val food = FoodLocal(
                 name = foodName,
                 category = category, // Enum wird als String gespeichert
-                state = state
             )
 
             foodDao.insertFood(food)
@@ -100,7 +97,6 @@ class RecipeListener(private val context: Context) {
             val stateString = jsonObject.optString("state", null)
 
             val category = categoryString?.let { FoodCategoryEnum.valueOf(it) } ?: FoodCategoryEnum.UNBEKANNT
-            val state = stateString?.let { FoodStateEnum.valueOf(it) } ?: FoodStateEnum.UNBEKANNT
 
             if (foodName.isNullOrBlank()) {
                 Log.e("FoodListener", "Food name is null or empty. Skipping update.")
@@ -110,7 +106,6 @@ class RecipeListener(private val context: Context) {
             val food = FoodLocal(
                 name = foodName,
                 category = category,
-                state = state
             )
 
             foodDao.updateFood(food)
@@ -138,6 +133,41 @@ class RecipeListener(private val context: Context) {
         } catch (e: Exception) {
             Log.e("FoodListener", "Fehler beim Löschen des Essens: ${e.message}")
             e.printStackTrace()
+        }
+    }
+
+    fun initializeApp(scope: CoroutineScope) {
+        val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val hasDownloadedFoods = sharedPref.getBoolean("hasDownloadedFoods", false)
+
+        if (!hasDownloadedFoods) {
+            scope.launch {
+                initialSynchronizationAllFoods()
+
+                // Nach erfolgreichem Download in SharedPreferences speichern
+                with(sharedPref.edit()) {
+                    putBoolean("hasDownloadedFoods", true)
+                    apply()
+                }
+            }
+        }
+    }
+
+    private suspend fun initialSynchronizationAllFoods() {
+        try {
+            Log.d("Recipe Listener", "start initial download of all foods...")
+            val foodList = supabase.from("food")
+                .select(columns = Columns.list("name", "category", "state"))
+                .decodeList<FoodLocal>()
+
+            if(foodList.isNotEmpty()) {
+                foodDao.insertAllFood(foodList)
+                Log.d("Recipe Listener", "Completed initial downlaod. Foods: $foodList")
+            } else {
+                Log.d("Recipe Listener", "No foods found")
+            }
+        } catch (e: Exception) {
+            Log.e("RecipeListener", "Fehler beim Initial-Download der Foods: ${e.message}")
         }
     }
 

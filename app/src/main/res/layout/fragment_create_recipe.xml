@@ -260,13 +260,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Typ 405 Weizenmehl oder ähnliches..."
-                    android:maxLength="100"
+                    android:maxLength="300"
                     android:textSize="14sp"
                     android:background="@drawable/new_recipe_background"
                     android:padding="8dp"
                     android:layout_marginBottom="4dp"
                     android:inputType="textMultiLine"
-                    android:lines="4"
+                    android:lines="5"
                     android:gravity="top|start"
                     android:scrollbars="vertical" />
 
@@ -275,7 +275,7 @@
                     android:id="@+id/remaining_chars_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Verbleibende Zeichen: 100"
+                    android:text="Verbleibende Zeichen: 300"
                     android:textSize="12sp"
                     android:textColor="@color/gray"
                     android:gravity="end" />
@@ -343,7 +343,7 @@
                         android:id="@+id/cooktime_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"
+                        android:text="0 Minuten"
                         android:layout_gravity="center_horizontal" />
                 </LinearLayout>
             </LinearLayout>
@@ -581,33 +581,6 @@
                         />
                 </LinearLayout>
 
-                <!-- Spalte für Portionen -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:orientation="vertical">
-
-                    <!-- Text über Dropdown -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Zustand"
-                        android:textSize="13sp"
-                        android:textColor="@color/black"
-                        android:paddingBottom="4dp" />
-
-                    <!-- Dropdown-Menü -->
-                    <Spinner
-                        android:id="@+id/state_chooser"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:spinnerMode="dropdown"
-                        android:background="@drawable/bg_dropdown_menu"
-                        />
-                </LinearLayout>
-
             </LinearLayout>
 
 
@@ -622,7 +595,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Kurze Beschreibung"
+                    android:text="Zusätzliche Informationen"
                     android:textColor="@color/black"
                     android:textSize="13sp"
                     />
@@ -777,7 +750,7 @@
                 android:scaleY="1.1"
                 android:paddingEnd="3dp"
                 android:enabled="true"
-                android:checked="true"
+                android:checked="false"
                 app:trackTint="@color/green_dark"
                 app:thumbTint="@color/pure_white"
                 />
@@ -886,13 +859,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Zuerst etwas Mehl in die Schüssel geben..."
-                    android:maxLength="300"
+                    android:maxLength="1000"
                     android:textSize="13sp"
                     android:background="@drawable/new_recipe_background"
                     android:padding="8dp"
                     android:layout_marginBottom="4dp"
                     android:inputType="textMultiLine"
-                    android:lines="4"
+                    android:lines="12"
                     android:gravity="top|start"
                     android:scrollbars="vertical" />
 
@@ -901,7 +874,7 @@
                     android:id="@+id/remaining_chars_text_instructions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Verbleibende Zeichen: 300"
+                    android:text="Verbleibende Zeichen: 1000"
                     android:textSize="12sp"
                     android:textColor="@color/gray"
                     android:gravity="end" />

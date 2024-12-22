@@ -32,7 +32,7 @@ import com.example.projektmbun.utils.enums.UnitsEnum
             entity = FoodLocal::class,
             parentColumns = ["name"],
             childColumns = ["foodId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = Routine::class,
@@ -54,7 +54,6 @@ data class FoodCard(
     var quantity: Double,
     var unit: UnitsEnum,
     var expiryDate: String?,
-    var state: FoodCardStateEnum?,
     var isActive: Boolean,
     var routineId: Int? = null,
     var stockId: Int? = null

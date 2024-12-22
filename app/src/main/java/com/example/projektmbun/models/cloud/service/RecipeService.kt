@@ -1,7 +1,7 @@
 package com.example.projektmbun.models.cloud.service
 
 import android.util.Log
-import com.example.projektmbun.models.data_structure.food.Food
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.recipe.Equipment
 import com.example.projektmbun.models.data_structure.recipe.Ingredient
 import com.example.projektmbun.models.data_structure.recipe.Instructions
@@ -14,6 +14,8 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.FileDescriptor.`in`
+import java.lang.System.`in`
 
 class RecipeService {
 
@@ -26,7 +28,7 @@ class RecipeService {
     suspend fun insertFullRecipe(
         recipe: Recipe,
         ingredients: List<Ingredient>,
-        food: List<Food>,
+        foodLocal: List<FoodLocal>,
         instructions: List<Instructions>,
         equipment: List<Equipment>
     ): Boolean = withContext(Dispatchers.IO) {
@@ -43,28 +45,52 @@ class RecipeService {
             }
             Log.d("RecipeService", "Rezept erfolgreich eingefügt mit ID: $recipeId")
 
-            // Food einfügen
-            val insertedFood = supabase.from(foodTable).insert(food) {
-                select(columns = Columns.list("name"))
-            }.decodeSingleOrNull<InsertedFoodName>()
+            val foodNames = foodLocal.map { it.name }
+            val existingFoods = supabase.from(foodTable)
+                .select(columns = Columns.list("name")) {
+                    filter {
+                        isIn("name", foodNames)
+                    }
+                }.decodeList<FoodLocal>()
 
-            val foodId = insertedFood?.name
-            if (foodId == null) {
-                Log.e("RecipeService", "Food konnte nicht eingefügt werden.")
-                return@withContext false
+            val foodsToInsert = foodLocal.filter { food ->
+                existingFoods.none { it.name == food.name }
             }
-            Log.d("RecipeService", "Food erfolgreich hinzugefügt: $foodId")
 
-            // Ingredients mit Rezept und Food verknüpfen
-            val preparedIngredients = ingredients.map { it.copy(recipeId = recipeId, foodId = foodId) }
+            if (foodsToInsert.isNotEmpty()) {
+                supabase.from(foodTable).insert(foodsToInsert) {
+                    select(columns = Columns.list("name"))
+                }
+                Log.d("RecipeService", "Neue Foods hinzugefügt: ${foodsToInsert.map { it.name }}")
+            } else {
+                Log.d("RecipeService", "Alle Foods existieren bereits, kein Einfügen erforderlich.")
+            }
+
+// Erstelle eine Map von Food-Namen zu Food-Objekten
+            val foodMap = foodLocal.associateBy { it.name }
+
+// Ingredients mit Rezept- und Food-Referenz verknüpfen
+            val preparedIngredients = ingredients.map { ingredient ->
+                val foodName = ingredient.description // Annahme: description enthält den Food-Namen
+                val food = foodMap[foodName]
+                if (food == null) {
+                    throw Exception("Food mit dem Namen $foodName nicht gefunden")
+                }
+                ingredient.copy(
+                    recipeId = recipeId,
+                    foodId = food.name // Da 'name' der Primärschlüssel ist
+                )
+            }
+
             if (preparedIngredients.isNotEmpty()) {
                 supabase.from(ingredientsTable).insert(preparedIngredients) {
-                    select(columns = Columns.list("id"))
+                    select(columns = Columns.list("foodId"))
                 }
                 Log.d("RecipeService", "Zutaten erfolgreich hinzugefügt.")
             } else {
                 Log.d("RecipeService", "Keine Zutaten zum Einfügen vorhanden.")
             }
+
 
             // Instructions mit Rezept verknüpfen
             val preparedInstructions = instructions.map { it.copy(recipeId = recipeId) }
@@ -157,18 +183,26 @@ class RecipeService {
         isOptional
     """.trimIndent())
 
+        Log.d("RecipeService", "columns for ingredients are: $columns")
+
         return@withContext try {
-            supabase.from(ingredientsTable)
+            val result = supabase.from(ingredientsTable)
                 .select(columns = columns) {
                     filter {
                         eq("recipeId", recipeId)
                     }
                 }
                 .decodeList<Ingredient>()
+
+            // Logge die decodeList-Ergebnisse
+            Log.d("RecipeService", "decodeList: $result")
+
+            result
         } catch (e: Exception) {
             Log.e("RecipeService", "Fehler beim Abrufen der Zutaten: ${e.localizedMessage}")
             emptyList()
         }
+
     }
 
     suspend fun getInstructionsByRecipeId(recipeId: Int): List<Instructions> = withContext(Dispatchers.IO) {

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.projektmbun.utils.S3Uploader
 import java.io.File
@@ -38,6 +39,39 @@ class ImageUploadController(private val context: Context, private val s3Uploader
             onError = onError
         )
     }
+
+    /**
+     * Löscht ein Bild aus der S3-Cloud basierend auf der gegebenen URL.
+     */
+    fun deleteImage(
+        imageUrl: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val key = extractKeyFromUrl(imageUrl) // Pfad (Key) des Bildes extrahieren
+            Log.d("ImageUploadController", "Deleting image with key: $key")
+            s3Uploader.deleteFile(key) { success ->
+                if (success) {
+                    onSuccess()
+                } else {
+                    onError("Fehler beim Löschen des Bildes in S3.")
+                }
+            }
+        } catch (e: Exception) {
+            onError("Exception beim Löschen des Bildes: ${e.message}")
+        }
+    }
+
+    /**
+     * Extrahiert den Speicher-Pfad (Key) eines Bildes aus der S3-URL.
+     * Beispiel: "https://bucket-name.s3.region.amazonaws.com/recipe_images/image_123.jpg"
+     * Ergebnis: "recipe_images/image_123.jpg"
+     */
+    private fun extractKeyFromUrl(imageUrl: String): String {
+        return imageUrl.substringAfter("s3.eu-north-1.amazonaws.com/") // Passe die Bucket-URL entsprechend an
+    }
+
 
 
     fun uploadImage(

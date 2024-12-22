@@ -32,6 +32,28 @@ class S3Uploader(private val context: Context) {
             .transferUtilityOptions(TransferUtilityOptions())
             .build()
     }
+    /**
+     * Löscht eine Datei aus dem S3-Bucket basierend auf dem Dateinamen (Key).
+     *
+     * @param fileName Der Schlüssel (Pfad) der Datei im S3-Bucket.
+     * @param onDeleteComplete Callback, um den Erfolg oder Fehler zurückzumelden.
+     */
+    fun deleteFile(fileKey: String, onComplete: (Boolean) -> Unit) {
+        // Führe die Löschoperation in einem Hintergrund-Thread aus
+        Thread {
+            try {
+                Log.d("S3 Uploader", "Trying to delete file: $fileKey")
+                s3Client.deleteObject(BUCKET_NAME, fileKey)
+                Log.d("S3 Uploader", "File deleted successfully: $fileKey")
+                onComplete(true)
+            } catch (e: Exception) {
+                Log.e("S3 Uploader", "Fehler beim Löschen der Datei: ${e.message}")
+                onComplete(false)
+            }
+        }.start()
+    }
+
+
 
     fun uploadFile(fileUri: Uri, fileName: String, onUploadComplete: (success: Boolean) -> Unit) {
         val file = File(fileUri.path ?: return)

@@ -75,7 +75,7 @@
             android:background="@drawable/bg_white_input"
             android:drawableStart="@drawable/ic_calendar_lightteal_sizable"
             android:drawableEnd="@drawable/ic_arrow_down_lightteal"
-            android:textColor="@color/tertiary_teal_light"
+            android:textColor="@color/pure_white"
             android:drawablePadding="8dp"
             android:gravity="center"
             android:paddingHorizontal="10dp" />

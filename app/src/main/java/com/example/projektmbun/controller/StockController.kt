@@ -34,7 +34,7 @@ class StockController(private val stockDao: StockDao, private val foodCardDao: F
      */
     suspend fun addFoodCardToStock(foodCard: FoodCard, stockId: Int?): Long? {
 
-        val updatedFoodCard = foodCard.copy(isActive = true, stockId = stockId, state = FoodCardStateEnum.PERMANENT)
+        val updatedFoodCard = foodCard.copy(isActive = true, stockId = stockId)
 
         return withContext(Dispatchers.IO) {
             try {

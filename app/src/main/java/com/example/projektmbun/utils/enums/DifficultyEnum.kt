@@ -1,4 +1,4 @@
-package com.example.projektmbun.models.data_structure.recipe
+package com.example.projektmbun.utils.enums
 
 import kotlinx.serialization.Serializable
 

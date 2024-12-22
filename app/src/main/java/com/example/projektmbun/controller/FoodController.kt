@@ -1,10 +1,8 @@
 package com.example.projektmbun.controller
 
 import com.example.projektmbun.models.cloud.service.FoodService
-import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.local.daos.FoodDao
-import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

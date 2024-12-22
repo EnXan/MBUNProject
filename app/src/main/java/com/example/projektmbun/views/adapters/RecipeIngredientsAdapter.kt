@@ -36,7 +36,7 @@ class RecipeIngredientsAdapter(
                 binding.quantityText.visibility = View.VISIBLE
                 binding.quantityUnit.visibility = View.VISIBLE
                 binding.quantityText.text = ingredient.amount.toString()
-                binding.quantityUnit.text = Converters.getUnitTextFromEnum(ingredient.unit)
+                binding.quantityUnit.text = Converters.fromUnitEnum(ingredient.unit)
             }
         }
     }

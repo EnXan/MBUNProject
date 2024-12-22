@@ -1,8 +1,7 @@
 package com.example.projektmbun.views.temp_data_models
 
-import com.example.projektmbun.models.data_structure.recipe.DifficultyEnum
+import com.example.projektmbun.utils.enums.DifficultyEnum
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
-import com.example.projektmbun.utils.enums.FoodStateEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 
 data class TemporaryRecipe(
@@ -37,13 +36,12 @@ data class TemporaryIngredient(
 data class TemporaryFood(
     var name: String = "",
     var category: FoodCategoryEnum? = null,
-    var state: FoodStateEnum? = null
 )
 
 data class TemporaryInstruction(
     val step: Int = 0,
     var description: String = "",
-    var imageUrl: String? = "",
+    var imageUrl: String? = ""
 )
 
 data class TemporaryEquipment(

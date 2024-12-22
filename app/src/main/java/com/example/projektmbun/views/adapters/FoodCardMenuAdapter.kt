@@ -46,12 +46,12 @@ class FoodCardMenuAdapter(private var foodCardSet: List<FoodCardWithDetails>) :
         fun bind(
             foodCardWithFood: FoodCardWithDetails,
         ) {
-            val foodName = foodCardWithFood.food.name
-            val category = foodCardWithFood.food.category
+            val foodName = foodCardWithFood.foodLocal.name
+            val category = foodCardWithFood.foodLocal.category
 
             // Set food data to the view
             foodTitleText.text = foodName
-            foodCategoryText.text = Converters.getCategoryTextFromEnum(category)
+            foodCategoryText.text = Converters.fromCategoryEnum(category)
 
             binding.buttonLinkStockList.setOnClickListener {
                 it.findNavController().navigate(

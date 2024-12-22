@@ -8,6 +8,7 @@ import androidx.room.Update
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
 import com.example.projektmbun.utils.enums.FoodCardStateEnum
+import kotlinx.coroutines.flow.Flow
 
 
 /**
@@ -57,6 +58,8 @@ interface FoodCardDao {
     @Query("SELECT * FROM food_card WHERE id = :foodCardId")
     suspend fun getFoodCardById(foodCardId: Int) : FoodCard?
 
+    @Query("SELECT * FROM food_card WHERE id = :foodCardId AND stockId = :stockId")
+    suspend fun getFoodCardByIdAndStockId(foodCardId: Int?, stockId: Int?) : FoodCard?
     /**
      * Get food card by their routine id.
      * @param routineId the id of the routines to get.
@@ -73,6 +76,11 @@ interface FoodCardDao {
     @Query("SELECT * FROM food_card WHERE id = :stockId")
     suspend fun getFoodCardByStockId(stockId: Int) : FoodCard?
 
+    @Query("SELECT COUNT(*) FROM food_card WHERE stockId IS NOT NULL")
+    fun getFoodCardCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM routine")
+    fun getRoutineCountFlow(): Flow<Int>
 
     /**
      * Update the expiryDate of a food card by its id.
@@ -105,14 +113,5 @@ interface FoodCardDao {
     @Query("SELECT * FROM food_card WHERE stockId IS NOT NULL")
     suspend fun getFoodCardsInStock(): List<FoodCard>
 
-
-    /**
-     * Update the state of a food card by its id.
-     * @param foodCardId the id of the food card to update.
-     * @param state the new state.
-     * @return number of rows updated `Int`.
-     */
-    @Query("UPDATE food_card SET state = :state WHERE id = :foodCardId")
-    suspend fun updateStateByFoodCardId(foodCardId: Int, state: FoodCardStateEnum) : Int
 
 }

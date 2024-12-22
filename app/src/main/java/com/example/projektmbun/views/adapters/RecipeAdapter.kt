@@ -1,6 +1,7 @@
 package com.example.projektmbun.views.adapters
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -41,7 +42,7 @@ class RecipeAdapter(
             nutritionTextView.text = adapter.checkNutrition(recipe)
             descriptionTextView.text = recipe.shortDescription
             durationTextView.text = "${recipe.readyInMinutes} min"
-            timeTextView.text = (recipe.dishType.firstOrNull() ?: "Nicht verfügbar").toString()
+            timeTextView.text = recipe.dishType
             priceTextView.text = String.format(Locale.getDefault(), "%.2f €", recipe.pricePerServing).replace('.', ',')
 
             // Load recipe image using Glide

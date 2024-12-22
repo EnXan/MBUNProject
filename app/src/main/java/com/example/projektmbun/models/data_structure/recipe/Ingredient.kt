@@ -1,6 +1,5 @@
 package com.example.projektmbun.models.data_structure.recipe
 
-import com.example.projektmbun.models.data_structure.food.Food
 import com.example.projektmbun.utils.enums.UnitsEnum
 import kotlinx.serialization.Serializable
 

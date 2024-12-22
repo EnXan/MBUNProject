@@ -1,5 +1,6 @@
 package com.example.projektmbun.views.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,6 +23,7 @@ import com.example.projektmbun.models.local.daos.RoutineDao
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.SpaceItemDecoration
+import com.example.projektmbun.views.activities.ScanActivity
 import com.example.projektmbun.views.adapters.ExpiryDateMenuAdapter
 import com.example.projektmbun.views.adapters.FoodCardMenuAdapter
 import com.example.projektmbun.views.adapters.RoutineMenuAdapter
@@ -61,6 +63,11 @@ class MenuFragment : Fragment() {
         foodCardMenuAdapter = FoodCardMenuAdapter(emptyList())
         expiryDateMenuAdapter = ExpiryDateMenuAdapter(emptyList())
         routineMenuAdapter = RoutineMenuAdapter(emptyList())
+
+        binding.searchBar.scanIcon.setOnClickListener {
+            val intent = Intent(requireContext(), ScanActivity::class.java)
+            startActivity(intent)
+        }
 
 
         // RecyclerView 1: FoodCards

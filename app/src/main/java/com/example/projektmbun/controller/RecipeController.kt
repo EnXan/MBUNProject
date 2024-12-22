@@ -2,15 +2,14 @@ package com.example.projektmbun.controller
 
 import android.util.Log
 import com.example.projektmbun.models.cloud.service.RecipeService
-import com.example.projektmbun.models.data_structure.food.Food
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
-import com.example.projektmbun.models.data_structure.recipe.DifficultyEnum
+import com.example.projektmbun.utils.enums.DifficultyEnum
 import com.example.projektmbun.models.data_structure.recipe.Equipment
 import com.example.projektmbun.models.data_structure.recipe.Ingredient
 import com.example.projektmbun.models.data_structure.recipe.Instructions
 import com.example.projektmbun.models.data_structure.recipe.Recipe
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
-import com.example.projektmbun.utils.enums.FoodStateEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 import com.example.projektmbun.views.temp_data_models.TemporaryEquipment
 import com.example.projektmbun.views.temp_data_models.TemporaryFood
@@ -67,7 +66,7 @@ class RecipeController(private val recipeService: RecipeService) {
                     foodId = null,
                     description = tempIngredient.description,
                     amount = tempIngredient.amount ?: 0.0,
-                    unit = tempIngredient.unit ?: UnitsEnum.UNITLESS,
+                    unit = tempIngredient.unit ?: UnitsEnum.UNBEKANNT,
                     price = tempIngredient.price,
                     isOptional = tempIngredient.isOptional
                 )
@@ -91,11 +90,10 @@ class RecipeController(private val recipeService: RecipeService) {
                 )
             }
 
-            val mappedFood = food.map { tempFood ->
-                Food(
+            val mappedFoodLocal = food.map { tempFood ->
+                FoodLocal(
                     name = tempFood.name,
-                    category = tempFood.category ?: FoodCategoryEnum.UNBEKANNT,
-                    state = tempFood.state ?: FoodStateEnum.UNBEKANNT
+                    category = tempFood.category ?: FoodCategoryEnum.UNBEKANNT
                 )
             }
 
@@ -104,7 +102,7 @@ class RecipeController(private val recipeService: RecipeService) {
             val success = recipeService.insertFullRecipe(
                 recipe = mappedRecipe,
                 ingredients = mappedIngredients,
-                food = mappedFood,
+                foodLocal = mappedFoodLocal,
                 instructions = mappedInstructions,
                 equipment = mappedEquipment
             )
@@ -206,7 +204,7 @@ class RecipeController(private val recipeService: RecipeService) {
                 Log.e("RecipeController", "Failed to calculate missing ingredients for recipe due to null value: ${recipe.title}")
             }
 
-            if (missingIngredients!! >= maximumMissingIngredients) { //TODO: Muss wieder zu kleiner als !!!!!!!!
+            if (missingIngredients!! <= maximumMissingIngredients) {
                 Pair(recipe, matchingIngredients)
             } else {
                 Log.d("RecipeController", "Missing ingredients are: $missingIngredients and maximum is: $maximumMissingIngredients")

@@ -26,11 +26,11 @@
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/mein_vorrat"
+                android:layout_height="match_parent"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="20sp"
-                android:textColor="@color/black" />
+                android:text="@string/mein_vorrat"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/btn_food_counter"
@@ -40,7 +40,13 @@
                 android:text="0"
                 android:textColor="@color/pure_white"
                 android:textSize="20sp"
-                android:background="@drawable/btn_count_items_teal" />
+                android:background="@drawable/btn_count_items_teal"
+                android:gravity="center"
+                android:padding="0dp"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="8sp"
+                android:autoSizeMaxTextSize="20sp"
+                android:autoSizeStepGranularity="1sp"/>
         </LinearLayout>
 
         <!-- Suchleiste -->
@@ -64,12 +70,12 @@
                 android:gravity="center"
                 android:layout_marginEnd="18dp">
 
-                <Button
+                <ImageButton
                     android:id="@+id/gemuese_filter"
                     android:layout_width="60dp"
                     android:layout_height="50dp"
                     android:background="@drawable/btn_use_filter"
-                    android:text="🥕"
+                    android:src="@drawable/emoji_carrot"
                     android:textSize="24dp" />
 
                 <TextView
@@ -89,12 +95,12 @@
                 android:gravity="center"
                 android:layout_marginEnd="18dp">
 
-                <Button
+                <ImageButton
                     android:id="@+id/obst_filter"
                     android:layout_width="60dp"
                     android:layout_height="50dp"
                     android:background="@drawable/btn_use_filter"
-                    android:text="🍎"
+                    android:src="@drawable/emoji_apple"
                     android:textSize="24dp" />
 
                 <TextView
@@ -114,12 +120,12 @@
                 android:gravity="center"
                 android:layout_marginEnd="18dp">
 
-                <Button
+                <ImageButton
                     android:id="@+id/fleisch_filter"
                     android:layout_width="60dp"
                     android:layout_height="50dp"
                     android:background="@drawable/btn_use_filter"
-                    android:text="🍗"
+                    android:src="@drawable/emoji_meat"
                     android:textSize="24dp" />
 
                 <TextView
@@ -138,12 +144,12 @@
                 android:orientation="vertical"
                 android:gravity="center">
 
-                <Button
+                <ImageButton
                     android:id="@+id/getreide_filter"
                     android:layout_width="60dp"
                     android:layout_height="50dp"
                     android:background="@drawable/btn_use_filter"
-                    android:text="🌾"
+                    android:src="@drawable/emoji_corn"
                     android:textSize="24dp" />
 
                 <TextView

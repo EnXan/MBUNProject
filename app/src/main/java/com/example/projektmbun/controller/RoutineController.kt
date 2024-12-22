@@ -10,6 +10,7 @@ import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetai
 import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import com.example.projektmbun.models.data_structure.routine.Routine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -41,6 +42,10 @@ class RoutineController(
             Log.e("RoutineController", "Error fetching all routines: ${e.localizedMessage}", e)
             mutableListOf()
         }
+    }
+
+    fun getRoutineCountFlow(): Flow<Int> {
+        return routineDao.getRoutineCountFlow()
     }
 
     /**
@@ -118,7 +123,7 @@ class RoutineController(
     suspend fun addFoodCardToRoutine(foodCard: FoodCard, routineId: Int?) = withContext(Dispatchers.IO) {
 
         //Change food card properties to match the routine requirements
-        val updatedFoodCard = foodCard.copy(isActive = true, routineId = routineId, state = FoodCardStateEnum.TEMPORARY)
+        val updatedFoodCard = foodCard.copy(isActive = true, routineId = routineId)
 
             try {
                 foodCardDao.insertFoodCard(updatedFoodCard)
@@ -175,16 +180,6 @@ class RoutineController(
         return foodCard.routineId == null && foodCard.stockId == null
     }
 
-
-    private suspend fun changeState(foodCard: FoodCardWithDetails) {
-        if(foodCard.foodCard.id != null) {
-            if (foodCard.foodCard.stockId != null) {
-                foodCardDao.updateStateByFoodCardId(foodCard.foodCard.id, FoodCardStateEnum.PERMANENT)
-            }
-            foodCardDao.updateStateByFoodCardId(foodCard.foodCard.id, FoodCardStateEnum.TEMPORARY)
-        }
-    }
-
     suspend fun checkAndExecuteRoutines() = withContext(Dispatchers.IO) {
         val activeRoutines = getAllActiveRoutines()
 
@@ -231,8 +226,7 @@ class RoutineController(
     private suspend fun transferFoodCardsToStock(routine: Routine) {
         val foodCards = foodCardDao.getFoodCardsByRoutineId(routine.id!!)
         foodCards.forEach { foodCard ->
-            foodCardDao.updateStateByFoodCardId(foodCard.id!!, FoodCardStateEnum.BOTH) // Setze Status auf both
-            foodCardDao.updateFoodCardStockIdByFoodCardId(foodCard.id, stockId = 1)
+            foodCardDao.updateFoodCardStockIdByFoodCardId(foodCard.id!!, stockId = 1)
             Log.d("RoutineController", "Transferred FoodCard ${foodCard.id} from Routine ${routine.name} to Stock")
         }
     }

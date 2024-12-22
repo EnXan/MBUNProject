@@ -18,12 +18,23 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginTop="10dp">
 
+
+        <ImageView
+            android:id="@+id/instruction_image"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:padding="10dp"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/avatars[3]" />
+
         <TextView
-            android:id="@+id/instruction_desc_half"
-            android:layout_width="0dp"
+            android:id="@+id/instruction_desc"
+            android:layout_width="match_parent"
             android:paddingTop="5dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -32,25 +43,6 @@
             android:gravity="start"
             android:paddingEnd="2dp"
             />
-
-        <ImageView
-            android:id="@+id/instruction_image"
-            android:layout_width="0dp"
-            android:layout_height="150dp"
-            android:layout_weight="1"
-            android:adjustViewBounds="true"
-            android:padding="10dp"
-            android:scaleType="centerCrop"
-            tools:srcCompat="@tools:sample/avatars[3]" />
     </LinearLayout>
-
-    <!-- TextView unterhalb des Bildes, die die gesamte Breite einnimmt -->
-    <TextView
-        android:id="@+id/instruction_desc_full"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Hier sollte das Rezept stehen..."
-        android:textSize="16sp"
-        android:gravity="start" />
 
 </LinearLayout>

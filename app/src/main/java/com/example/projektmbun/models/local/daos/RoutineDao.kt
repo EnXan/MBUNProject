@@ -2,6 +2,7 @@ package com.example.projektmbun.models.local.daos
 
 import androidx.room.*
 import com.example.projektmbun.models.data_structure.routine.Routine
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Data Access Object (DAO) interface for performing database operations on the `Routine` entity.
@@ -65,5 +66,8 @@ interface RoutineDao {
      */
     @Query("DELETE FROM routine WHERE id = :routineId")
     suspend fun deleteRoutineById(routineId: Int): Int
+
+    @Query("SELECT COUNT(*) FROM routine")
+    fun getRoutineCountFlow(): Flow<Int>
 
 }
