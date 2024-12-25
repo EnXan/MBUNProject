@@ -1,6 +1,11 @@
 package com.example.projektmbun.views.activities
 
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
@@ -10,13 +15,20 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.work.*
 import com.example.projektmbun.R
 import com.example.projektmbun.databinding.ActivityMainBinding
+import com.example.projektmbun.models.cloud.listener.FoodListener
+import com.example.projektmbun.utils.NetworkMonitor
 import com.example.projektmbun.workers.RoutineExecutionWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NetworkMonitor.NetworkStatusListener {
+
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var networkMonitor: NetworkMonitor
+    private var wasOffline = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,30 +45,76 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         binding.bottomNavigation.setupWithNavController(navController)
 
+        // Initialize network monitor
+        networkMonitor = NetworkMonitor(this)
+
+        // Set initial offline state based on current connectivity
+        wasOffline = !isInternetAvailable()
+
         // Initialize and set up the routine worker
         setupRoutineWorker()
 
+        // If internet is available at startup, initialize the app
+        if (isInternetAvailable()) {
+            FoodListener(this).initializeApp(CoroutineScope(Dispatchers.IO))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Register network monitor when activity comes to foreground
+        registerReceiver(
+            networkMonitor,
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Unregister network monitor when activity goes to background
+        try {
+            unregisterReceiver(networkMonitor)
+        } catch (e: IllegalArgumentException) {
+            // Receiver wasn't registered
+        }
+    }
+
+    override fun onNetworkStatusChanged(isConnected: Boolean) {
+        if (isConnected && wasOffline) {
+            // Only initialize if we were previously offline
+            FoodListener(this).initializeApp(CoroutineScope(Dispatchers.IO))
+            wasOffline = false
+        } else if (!isConnected) {
+            wasOffline = true
+        }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     private fun setupRoutineWorker() {
         // Define constraints
         val constraints = Constraints.Builder()
-            .setRequiresBatteryNotLow(true) // Only run when battery is not low
-            .setRequiresCharging(true)     // Only run when device is charging
+            .setRequiresBatteryNotLow(true)
+            .setRequiresCharging(true)
             .build()
 
         // Create a periodic work request
         val routineWorkerRequest = PeriodicWorkRequestBuilder<RoutineExecutionWorker>(
-            1, TimeUnit.DAYS // Run daily
+            1, TimeUnit.DAYS
         )
-            .setConstraints(constraints) // Add constraints
-            .setInitialDelay(24, TimeUnit.HOURS) // Wait 24 hours before the first run
+            .setConstraints(constraints)
+            .setInitialDelay(24, TimeUnit.HOURS)
             .build()
 
         // Enqueue the work request
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "RoutineExecution", // Unique name for this worker
-            ExistingPeriodicWorkPolicy.UPDATE, // Replace existing work with the same name
+            "RoutineExecution",
+            ExistingPeriodicWorkPolicy.UPDATE,
             routineWorkerRequest
         )
     }

@@ -1,16 +1,13 @@
 package com.example.projektmbun.views.fragments
 
-import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -29,11 +26,12 @@ import com.bumptech.glide.Glide
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.ImageUploadController
 import com.example.projektmbun.controller.RecipeController
+import com.example.projektmbun.controller.RecipeValidator
 import com.example.projektmbun.databinding.FragmentCreateRecipeBinding
 import com.example.projektmbun.models.cloud.service.RecipeService
-import com.example.projektmbun.utils.enums.DifficultyEnum
 import com.example.projektmbun.utils.Converters
 import com.example.projektmbun.utils.S3Uploader
+import com.example.projektmbun.utils.enums.DifficultyEnum
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 import com.example.projektmbun.views.temp_data_models.TemporaryEquipment
@@ -52,12 +50,8 @@ class CreateRecipeFragment : Fragment() {
     private lateinit var recipeService: RecipeService
     private lateinit var recipeController: RecipeController
 
-    private val uploadedImageLinks = mutableListOf<String>()
-
     private val tempRecipe = TemporaryRecipe()
-    private val tempIngredient = TemporaryIngredient()
     private val tempInstructions = TemporaryInstruction()
-    private val tempEquipment = TemporaryEquipment()
 
     private val dropdownOptionsType = listOf("Frühstück", "Hauptspeise", "Abendbrot", "Nachtisch", "Snack", "Beilage", "Dip")
     private val dropdownOptionsCategory = FoodCategoryEnum.entries
@@ -74,6 +68,9 @@ class CreateRecipeFragment : Fragment() {
     private var editingInstructionIndex: Int? = null
 
 
+    private lateinit var recipeValidator: RecipeValidator
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,6 +82,8 @@ class CreateRecipeFragment : Fragment() {
         imageUploadController = ImageUploadController(requireContext(), s3Uploader)
         recipeService = RecipeService()
         recipeController = RecipeController(recipeService)
+        recipeValidator = RecipeValidator(tempRecipe, ingredientsList, instructionsList, requireContext())
+
 
         //setup recipe details
         changePortions()
@@ -130,87 +129,6 @@ class CreateRecipeFragment : Fragment() {
         }
     }
 
-    private fun validateRecipeInfoFields(recipeTitle: String, recipePortions: String, shortDesc: String, prepTime: Int, recipeSrc: String): Boolean {
-        var isValid = true
-
-        if(tempRecipe.imageUrl.isBlank()) {
-            Toast.makeText(requireContext(), "Bitte ein Rezeptbild hinzufügen!", Toast.LENGTH_SHORT).show()
-            isValid = false
-        }
-
-        if (recipeTitle.isBlank()) {
-            binding.recipeTitle.error = "This field is required!"
-            isValid = false
-        }
-
-        if (recipePortions.isBlank() || recipePortions.toIntOrNull() == null) {
-            binding.portionText.error = "This field requires a valid number!"
-            isValid = false
-        }
-
-        if (shortDesc.isBlank()) {
-            binding.editRecipeDescMultiline.error = "This field is required!"
-            isValid = false
-        }
-
-        if (prepTime == 0) {
-            binding.preptimeText.error = "Preparation time cannot be zero!"
-            isValid = false
-        }
-
-        if (recipeSrc.isBlank()) {
-            binding.recipeSrcText.error = "This field is required!"
-            isValid = false
-        }
-
-        return isValid
-    }
-    private fun validateIngredientFields(ingredientName: String, ingredientAmount: Int?, ingredientPrice: Double?): Boolean {
-        var isValid = true
-
-        if (ingredientName.isBlank()) {
-            binding.ingredientNameText.error = "This field is required!"
-            isValid = false
-        }
-        if (ingredientAmount == null || ingredientAmount <= 0 || ingredientAmount >=10000) {
-            binding.ingredientAmountText.error = "Bitte eine gültige Menge eingeben!"
-            isValid = false
-        }
-
-        if (ingredientPrice == null || ingredientPrice <= 0 || ingredientPrice >= 999) {
-            binding.ingredientPriceText.error = "This field requires a valid number!"
-            isValid = false
-        }
-        return isValid
-    }
-    private fun validateIngredientExistence(): Boolean {
-        return if (ingredientsList.isEmpty()) {
-            Toast.makeText(requireContext(), "Fügen Sie mindestens eine Zutat hinzu!", Toast.LENGTH_SHORT).show()
-            false
-        } else {
-            true
-        }
-    }
-    private fun validateInstructionFields(instructionDesc: String): Boolean {
-        var isValid = true
-
-        if (instructionDesc.isBlank()) {
-            binding.editTextMultilineInstructions.error = "This field is required!"
-            isValid = false
-        }
-
-        return isValid
-    }
-    private fun validateInstructionExistence(): Boolean {
-        Log.d("CreateRecipeFragment", "validateInstructionExistence called with: $tempInstructions")
-        return if (instructionsList.isEmpty()) {
-            Toast.makeText(requireContext(), "Fügen Sie mindestens einen Schritt hinzu!", Toast.LENGTH_SHORT).show()
-            false
-        } else {
-            true
-        }
-    }
-
     private fun setupUIListeners() {
 
         binding.closeButton.setOnClickListener {
@@ -236,9 +154,9 @@ class CreateRecipeFragment : Fragment() {
             val isVegetarian = binding.checkboxVegetarisch.isSelected
             val isPescetarian = binding.checkboxPesketarisch.isSelected
 
-            val isRecipeInfoValid = validateRecipeInfoFields(recipeTitle, recipePortions, shortDesc, prepTime, recipeSrc)
-            val isIngredientExistenceValid = validateIngredientExistence()
-            val isInstructionExistenceValid = validateInstructionExistence()
+            val isRecipeInfoValid = recipeValidator.validateRecipeInfoFields(recipeTitle, recipePortions, shortDesc, prepTime, recipeSrc)
+            val isIngredientExistenceValid = recipeValidator.validateIngredientExistence()
+            val isInstructionExistenceValid = recipeValidator.validateInstructionExistence()
 
             // Validate fields
             if (isRecipeInfoValid && isIngredientExistenceValid && isInstructionExistenceValid) {
@@ -324,7 +242,7 @@ class CreateRecipeFragment : Fragment() {
             val ingredientCategoryEnum = Converters.toCategoryEnum(ingredientCategoryString)
             Log.d("CreateRecipeFragment", "foodCategory: $ingredientCategoryEnum is type of ${ingredientCategoryEnum!!::class.java}")
 
-            if(validateIngredientFields(ingredientName, ingredientAmount, ingredientPrice)) {
+            if(recipeValidator.validateIngredientFields(ingredientName, ingredientAmount, ingredientPrice)) {
                 Log.d("CreateRecipeFragment", "validated!")
                 val newFood = TemporaryFood(ingredientName, ingredientCategoryEnum)
                 val newIngredient = TemporaryIngredient(
@@ -388,7 +306,7 @@ class CreateRecipeFragment : Fragment() {
 
 
 
-            if (validateInstructionFields(instructionDesc)) {
+            if (recipeValidator.validateInstructionFields(instructionDesc)) {
                 val stepNumber = instructionsList.size + 1 // Schritt zählt bei 1 anstatt bei 0
 
                 val newInstruction = TemporaryInstruction(
