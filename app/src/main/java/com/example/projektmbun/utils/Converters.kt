@@ -41,7 +41,7 @@ object Converters {
      * @return The human-readable text representation of the enum, or `null` if the input does not match any category.
      */
     @JvmStatic
-    fun fromCategoryEnum(enum: FoodCategoryEnum): String? {
+    fun fromCategoryEnum(enum: FoodCategoryEnum): String {
         return when (enum) {
             FoodCategoryEnum.GEMUESE -> "Gemüse"
             FoodCategoryEnum.OBST -> "Obst"
@@ -58,7 +58,7 @@ object Converters {
             FoodCategoryEnum.FETT -> "Fett"
             FoodCategoryEnum.EI -> "Ei"
             FoodCategoryEnum.GEWUERZ -> "Gewürz"
-            else -> null
+            FoodCategoryEnum.UNBEKANNT -> "Unbekannt"
         }
     }
 

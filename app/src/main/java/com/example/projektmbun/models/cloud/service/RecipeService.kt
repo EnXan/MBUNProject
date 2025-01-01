@@ -6,7 +6,6 @@ import com.example.projektmbun.models.data_structure.recipe.Equipment
 import com.example.projektmbun.models.data_structure.recipe.Ingredient
 import com.example.projektmbun.models.data_structure.recipe.Instructions
 import com.example.projektmbun.models.data_structure.recipe.Recipe
-import com.example.projektmbun.models.data_structure.supabase_returns.InsertedFoodName
 import com.example.projektmbun.models.data_structure.supabase_returns.InsertedInstructionId
 import com.example.projektmbun.models.data_structure.supabase_returns.InsertedRecipeId
 import com.example.projektmbun.models.database.supabase
@@ -14,8 +13,6 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.FileDescriptor.`in`
-import java.lang.System.`in`
 
 class RecipeService {
 
@@ -43,7 +40,6 @@ class RecipeService {
                 Log.e("RecipeService", "Fehler: Rezept wurde eingefügt, aber keine ID erhalten.")
                 return@withContext false
             }
-            Log.d("RecipeService", "Rezept erfolgreich eingefügt mit ID: $recipeId")
 
             val foodNames = foodLocal.map { it.name }
             val existingFoods = supabase.from(foodTable)
@@ -61,7 +57,7 @@ class RecipeService {
                 supabase.from(foodTable).insert(foodsToInsert) {
                     select(columns = Columns.list("name"))
                 }
-                Log.d("RecipeService", "Neue Foods hinzugefügt: ${foodsToInsert.map { it.name }}")
+
             } else {
                 Log.d("RecipeService", "Alle Foods existieren bereits, kein Einfügen erforderlich.")
             }
@@ -71,11 +67,8 @@ class RecipeService {
 
 // Ingredients mit Rezept- und Food-Referenz verknüpfen
             val preparedIngredients = ingredients.map { ingredient ->
-                val foodName = ingredient.description // Annahme: description enthält den Food-Namen
-                val food = foodMap[foodName]
-                if (food == null) {
-                    throw Exception("Food mit dem Namen $foodName nicht gefunden")
-                }
+                val foodName = ingredient.foodId
+                val food = foodMap[foodName] ?: throw Exception("Food mit dem Namen $foodName nicht gefunden")
                 ingredient.copy(
                     recipeId = recipeId,
                     foodId = food.name // Da 'name' der Primärschlüssel ist
@@ -292,10 +285,8 @@ class RecipeService {
             val result = supabase.from(recipesTable)
                 .select(columns = columns)
                 .decodeList<Recipe>()
-            Log.d("RecipeService", "Anzahl der gefundenen Rezepte: ${result}")
             return@withContext result
         } catch (e: Exception) {
-            Log.e("RecipeService", "Fehler beim Abrufen aller Rezepte: ${e.localizedMessage}")
             emptyList()
         }
     }

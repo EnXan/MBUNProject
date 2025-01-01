@@ -8,24 +8,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.SeekBar
-import android.widget.TableRow
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.ImageUploadController
 import com.example.projektmbun.controller.RecipeController
+import com.example.projektmbun.controller.RecipeTempDataHandler
 import com.example.projektmbun.controller.RecipeValidator
 import com.example.projektmbun.databinding.FragmentCreateRecipeBinding
 import com.example.projektmbun.models.cloud.service.RecipeService
@@ -35,23 +26,21 @@ import com.example.projektmbun.utils.enums.DifficultyEnum
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 import com.example.projektmbun.views.temp_data_models.TemporaryEquipment
-import com.example.projektmbun.views.temp_data_models.TemporaryFood
-import com.example.projektmbun.views.temp_data_models.TemporaryIngredient
 import com.example.projektmbun.views.temp_data_models.TemporaryInstruction
-import com.example.projektmbun.views.temp_data_models.TemporaryRecipe
 import kotlinx.coroutines.launch
 
-
 class CreateRecipeFragment : Fragment() {
-
     private var _binding: FragmentCreateRecipeBinding? = null
     private val binding get() = _binding!!
+
     private lateinit var imageUploadController: ImageUploadController
     private lateinit var recipeService: RecipeService
     private lateinit var recipeController: RecipeController
+    private lateinit var recipeTempDataHandler: RecipeTempDataHandler
+    private lateinit var recipeValidator: RecipeValidator
 
-    private val tempRecipe = TemporaryRecipe()
-    private val tempInstructions = TemporaryInstruction()
+    private var editingIngredientIndex: Int? = null
+    private var editingInstructionIndex: Int? = null
 
     private val dropdownOptionsType = listOf("Frühstück", "Hauptspeise", "Abendbrot", "Nachtisch", "Snack", "Beilage", "Dip")
     private val dropdownOptionsCategory = FoodCategoryEnum.entries
@@ -61,16 +50,10 @@ class CreateRecipeFragment : Fragment() {
         .filter { it != UnitsEnum.UNBEKANNT }
         .map { Converters.fromUnitEnum(it) }
 
-    private val ingredientsList = mutableListOf<Pair<TemporaryFood, TemporaryIngredient>>()
-    private var editingIngredientIndex: Int? = null
-    private val instructionsWithEquipments = mutableMapOf<TemporaryInstruction, List<TemporaryEquipment>>()
-    private val instructionsList = mutableListOf<TemporaryInstruction>()
-    private var editingInstructionIndex: Int? = null
-
-
-    private lateinit var recipeValidator: RecipeValidator
-
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        recipeTempDataHandler = RecipeTempDataHandler()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,199 +65,191 @@ class CreateRecipeFragment : Fragment() {
         imageUploadController = ImageUploadController(requireContext(), s3Uploader)
         recipeService = RecipeService()
         recipeController = RecipeController(recipeService)
-        recipeValidator = RecipeValidator(tempRecipe, ingredientsList, instructionsList, requireContext())
+        recipeValidator = RecipeValidator(recipeTempDataHandler, requireContext())
 
-
-        //setup recipe details
-        changePortions()
-        setupDropdownMenuType()
-        setupPrepTimeSeekBar()
-        setupCookTimeSeekBar()
-        setupSchwierigkeitButtonSelection()
-
-        //setup ingredients
-        setupDropdownMenuCategory()
-        setupDropdownMenuUnit()
-
-        //setup instructions
-        setupEquipmentButton()
-
-
-
-        setupUIListeners()
-
-        // Upload recipe image on click
-        binding.recipeImageUploader.setOnClickListener {
-            checkPermissionAndSelectImage()
-        }
-        // Upload instruction image on click
-        binding.instructionsImageUploader.setOnClickListener {
-            selectInstructionImage()
-        }
+        setupUi()
+        setupListeners()
 
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    private fun setupUi() {
+        setupDropdowns()
+        changePortions()
+        setupTimeSeekBar()
+        setupSchwierigkeitButtonSelection()
+        setupEquipmentButton()
     }
 
-    private fun checkPermissionAndSelectImage() {
-        val permission = imageUploadController.checkPermission()
+    private fun setupListeners() {
+        setupUiTextChangedListener()
+        setupUiClickListener()
+        setupImageUploadListeners()
+    }
 
-        if (imageUploadController.isPermissionGranted(permission)) {
-            selectImage()
-        } else {
-            requestPermissionLauncher.launch(permission)
+    private fun setupUiClickListener() {
+        // Submit Recipe Button
+        binding.submitRecipe.setOnClickListener {
+            handleRecipeSubmit()
         }
-    }
 
-    private fun setupUIListeners() {
+        // Add Ingredient Button
+        binding.addIngredientsToRecipe.setOnClickListener {
+            handleIngredientAdd()
+        }
+
+        // Add Instruction Button
+        binding.addInstructionsToRecipe.setOnClickListener {
+            handleInstructionAdd()
+        }
 
         binding.closeButton.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+    }
 
-        //listener for recipe infos
-        binding.submitRecipe.setOnClickListener {
-            // Get user input of recipe details
-            val recipeTitle = binding.recipeTitle.text.toString().trim()
-            val recipePortions = binding.portionText.text.toString().trim()
-            val dishType = binding.typeChoose.selectedItem.toString().trim()
-            val shortDesc = binding.editRecipeDescMultiline.text.toString().trim()
-            val prepTime = binding.preptimeSeekbar.progress
-            val cookTime = binding.cooktimeSeekbar.progress
-            val readyTime = prepTime + cookTime
-            val recipeSrc = binding.recipeSrcText.text.toString().trim()
+    private fun handleRecipeSubmit() {
+        val recipeTitle = binding.recipeTitle.text.toString().trim()
+        val recipePortions = binding.portionText.text.toString().trim()
+        val dishType = binding.typeChoose.selectedItem.toString().trim()
+        val shortDesc = binding.editRecipeDescMultiline.text.toString().trim()
+        val prepTime = binding.preptimeSeekbar.progress
+        val cookTime = binding.cooktimeSeekbar.progress
+        val recipeSrc = binding.recipeSrcText.text.toString().trim()
 
-            val isDairyFree = binding.checkboxLaktosefrei.isSelected
-            val isGlutenFree = binding.checkboxGlutenfrei.isSelected
-            val isNutFree = binding.checkboxNussfrei.isSelected
-            val isVegan = binding.checkboxVegan.isSelected
-            val isVegetarian = binding.checkboxVegetarisch.isSelected
-            val isPescetarian = binding.checkboxPesketarisch.isSelected
+        val isDairyFree = binding.checkboxLaktosefrei.isChecked
+        val isGlutenFree = binding.checkboxGlutenfrei.isChecked
+        val isNutFree = binding.checkboxNussfrei.isChecked
+        val isVegan = binding.checkboxVegan.isChecked
+        val isVegetarian = binding.checkboxVegetarisch.isChecked
+        val isPescetarian = binding.checkboxPesketarisch.isChecked
 
-            val isRecipeInfoValid = recipeValidator.validateRecipeInfoFields(recipeTitle, recipePortions, shortDesc, prepTime, recipeSrc)
-            val isIngredientExistenceValid = recipeValidator.validateIngredientExistence()
-            val isInstructionExistenceValid = recipeValidator.validateInstructionExistence()
+        if (recipeValidator.validateRecipeInfoFields(recipeTitle, recipePortions, shortDesc, prepTime, recipeSrc)) {
+            recipeTempDataHandler.updateRecipeBasicInfo(
+                recipeTitle,
+                recipePortions.toInt(),
+                dishType,
+                shortDesc,
+                prepTime,
+                cookTime,
+                recipeSrc
+            )
 
-            // Validate fields
-            if (isRecipeInfoValid && isIngredientExistenceValid && isInstructionExistenceValid) {
-                // If validation passes, store data in tempRecipe
-                tempRecipe.title = recipeTitle
-                tempRecipe.servings = recipePortions.toInt()
-                tempRecipe.preparationMinutes = prepTime
-                tempRecipe.dishType = dishType
-                tempRecipe.cookingMinutes = cookTime
-                tempRecipe.readyInMinutes = readyTime
-                tempRecipe.shortDescription = shortDesc
-                tempRecipe.sourceUrl = recipeSrc
-                tempRecipe.dairyFree = isDairyFree
-                tempRecipe.glutenFree = isGlutenFree
-                tempRecipe.nutFree = isNutFree
-                tempRecipe.vegan = isVegan
-                tempRecipe.vegetarian = isVegetarian
-                tempRecipe.pescetarian = isPescetarian
-                tempRecipe.pricePerServing = calculateRecipePrice()
+            recipeTempDataHandler.updateRecipeDietaryInfo(
+                isDairyFree,
+                isGlutenFree,
+                isNutFree,
+                isVegan,
+                isVegetarian,
+                isPescetarian
+            )
 
-                // Save to database
-                viewLifecycleOwner.lifecycleScope.launch {
-                    saveRecipeToDatabase()
-                }
-
-                Log.d("CreateRecipeFragment", "Rezeptinfos: $tempRecipe")
+            viewLifecycleOwner.lifecycleScope.launch {
+                saveRecipeToDatabase()
             }
         }
+    }
 
+    private fun handleIngredientAdd() {
+        val ingredientName = binding.ingredientNameText.text.toString()
+        val ingredientCategoryEnum = Converters.toCategoryEnum(binding.categoryChooser.selectedItem.toString())
+        val ingredientShortDesc = binding.ingredientDescTextMultiline.text.toString()
+        val ingredientAmount = binding.ingredientAmountText.text.toString().toDoubleOrNull()
+        val ingredientUnit = Converters.toUnitEnum(binding.unitChooser.selectedItem.toString())
+        val ingredientPrice = binding.ingredientPriceText.text.toString().toDoubleOrNull()
+        val isIngredientOptional = binding.switchOptional.isChecked
 
-        binding.editRecipeDescMultiline.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val maxLength = 300 // resources.getInteger(R.integer.max_short_desc_length) // Definiere in `integers.xml`
-                val remainingChars = maxLength - s.toString().length
-                binding.remainingCharsText.text = "Verbleibende Zeichen: $remainingChars"
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        binding.ingredientDescTextMultiline.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val maxLength = 100 // resources.getInteger(R.integer.max_short_desc_length) // Definiere in `integers.xml`
-                val remainingChars = maxLength - s.toString().length
-                binding.remainingCharsTextIngredients.text = "Verbleibende Zeichen: $remainingChars"
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        binding.editTextMultilineInstructions.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val maxLength = 1000 // resources.getInteger(R.integer.max_short_desc_length) // Definiere in `integers.xml`
-                val remainingChars = maxLength - s.toString().length
-                binding.remainingCharsTextInstructions.text = "Verbleibende Zeichen: $remainingChars"
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-
-
-
-
-        // listener for ingredients
-        binding.addIngredientsToRecipe.setOnClickListener {
-            Log.d("CreateRecipeFragment", "addIngredientsToRecipe clicked")
-            val ingredientName = binding.ingredientNameText.text.toString()
-            val ingredientCategoryString = binding.categoryChooser.selectedItem.toString()
-            val ingredientShortDesc = binding.ingredientDescTextMultiline.text.toString()
-            val ingredientAmount = binding.ingredientAmountText.text.toString().toIntOrNull()
-            val ingredientUnit = binding.unitChooser.selectedItem.toString()
-            val ingredientPrice = binding.ingredientPriceText.text.toString().toDoubleOrNull()
-            val isIngredientOptional = binding.switchOptional.isChecked
-
-            Log.d("CreateRecipeFragment", "ingredientCategory: $ingredientCategoryString is type of ${ingredientCategoryString::class.java}")
-            val ingredientCategoryEnum = Converters.toCategoryEnum(ingredientCategoryString)
-            Log.d("CreateRecipeFragment", "foodCategory: $ingredientCategoryEnum is type of ${ingredientCategoryEnum!!::class.java}")
-
-            if(recipeValidator.validateIngredientFields(ingredientName, ingredientAmount, ingredientPrice)) {
-                Log.d("CreateRecipeFragment", "validated!")
-                val newFood = TemporaryFood(ingredientName, ingredientCategoryEnum)
-                val newIngredient = TemporaryIngredient(
-                    description = ingredientShortDesc,
-                    amount = ingredientAmount?.toDouble(),
-                    unit = Converters.toUnitEnum(ingredientUnit),
-                    price = ingredientPrice!!,
-                    isOptional = isIngredientOptional
-                )
-                Log.d("CreateRecipeFragment", "ingredient: $newIngredient")
-
-                if (editingIngredientIndex != null) {
-                    ingredientsList[editingIngredientIndex!!] = Pair(newFood, newIngredient)
-                    updateIngredientInTable(editingIngredientIndex!!, ingredientName, ingredientAmount!!, ingredientUnit)
-
+        if(recipeValidator.validateIngredientFields(ingredientName, ingredientAmount?.toInt(), ingredientPrice)) {
+            if (editingIngredientIndex != null) {
+                if (recipeTempDataHandler.updateIngredient(
+                        editingIngredientIndex!!,
+                        ingredientName,
+                        ingredientCategoryEnum!!,
+                        ingredientShortDesc,
+                        ingredientAmount!!,
+                        ingredientUnit,
+                        ingredientPrice!!,
+                        isIngredientOptional
+                    )) {
+                    updateIngredientInTable(editingIngredientIndex!!, ingredientName, ingredientAmount.toInt(), ingredientUnit.toString())
                     editingIngredientIndex = null
                     binding.addIngredientsToRecipe.text = "Hinzufügen"
-                } else {
-                    ingredientsList.add(Pair(newFood, newIngredient))
-                    addIngredientToTable(ingredientName, ingredientAmount!!, ingredientUnit)
                 }
-
-                clearIngredientInputFields()
-
-                Log.d("CreateRecipeFragment", "Ingredient: $newIngredient")
-                Log.d("CreateRecipeFragment", "Food: $newFood")
+            } else {
+                val index = recipeTempDataHandler.addIngredient(
+                    ingredientName,
+                    ingredientCategoryEnum!!,
+                    ingredientShortDesc,
+                    ingredientAmount!!,
+                    ingredientUnit,
+                    ingredientPrice!!,
+                    isIngredientOptional
+                )
+                addIngredientToTable(ingredientName, ingredientAmount.toInt(), ingredientUnit.toString())
             }
+            clearIngredientInputFields()
         }
+    }
 
+    private fun handleInstructionAdd() {
+        val instructionDesc = binding.editTextMultilineInstructions.text.toString().trim()
+        val equipmentList = collectEquipmentFromUI()
+        val instructionImageUrl = recipeTempDataHandler.getTempInstructionImage()
+
+        if (recipeValidator.validateInstructionFields(instructionDesc)) {
+            if (editingInstructionIndex != null) {
+                recipeTempDataHandler.updateInstruction(
+                    editingInstructionIndex!!,
+                    instructionDesc,
+                    instructionImageUrl,
+                    equipmentList
+                )
+                addInstructionToTable(recipeTempDataHandler.getInstruction(editingInstructionIndex!!)!!.first, editingInstructionIndex)
+                editingInstructionIndex = null
+                binding.addInstructionsToRecipe.text = "Hinzufügen"
+            } else {
+                val index = recipeTempDataHandler.addInstruction(
+                    instructionDesc,
+                    instructionImageUrl,
+                    equipmentList
+                )
+                addInstructionToTable(recipeTempDataHandler.getInstruction(index)!!.first)
+            }
+            clearInstructionFields()
+        }
+    }
+
+    private fun clearInstructionFields() {
+        binding.editTextMultilineInstructions.text.clear()
+        clearDynamicEquipmentViews()
+        clearInstructionImage()
+    }
+
+    private fun setupUiTextChangedListener() {
+        setupCharacterCounters()
+        setupPriceInputFormatter()
+    }
+
+    private fun setupCharacterCounters() {
+        setupCharacterCounter(binding.editRecipeDescMultiline, binding.remainingCharsText, 300)
+        setupCharacterCounter(binding.ingredientDescTextMultiline, binding.remainingCharsTextIngredients, 100)
+        setupCharacterCounter(binding.editTextMultilineInstructions, binding.remainingCharsTextInstructions, 1000)
+    }
+
+    private fun setupCharacterCounter(editText: EditText, counterView: TextView, maxLength: Int) {
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val remainingChars = maxLength - s.toString().length
+                counterView.text = "Verbleibende Zeichen: $remainingChars"
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+    }
+
+    private fun setupPriceInputFormatter() {
         binding.ingredientPriceText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val input = s.toString()
                 if (input.contains(".") || input.contains(",")) {
@@ -282,322 +257,30 @@ class CreateRecipeFragment : Fragment() {
                     if (parts.size > 1 && parts[1].length > 2) {
                         val fixedInput = parts[0] + "." + parts[1].take(2)
                         binding.ingredientPriceText.setText(fixedInput)
-                        binding.ingredientPriceText.setSelection(fixedInput.length) // Cursor positionieren
+                        binding.ingredientPriceText.setSelection(fixedInput.length)
                     }
                 }
             }
-
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
 
-
-
-        // Listener für den Hinzufügen-Button der Instructions
-        binding.addInstructionsToRecipe.setOnClickListener {
-            val instructionDesc = binding.editTextMultilineInstructions.text.toString().trim()
-            val equipmentList = collectEquipmentFromUI()
-            val instructionImageUrl = if (!tempInstructions.imageUrl.isNullOrBlank()) {
-                tempInstructions.imageUrl
-            } else if (editingInstructionIndex != null) {
-                instructionsList[editingInstructionIndex!!].imageUrl
+    private fun setupImageUploadListeners() {
+        binding.recipeImageUploader.setOnClickListener {
+            if (imageUploadController.isPermissionGranted(imageUploadController.checkPermission())) {
+                selectImage()
             } else {
-                ""
+                requestPermissionLauncher.launch(imageUploadController.checkPermission())
             }
+        }
 
-
-
-            if (recipeValidator.validateInstructionFields(instructionDesc)) {
-                val stepNumber = instructionsList.size + 1 // Schritt zählt bei 1 anstatt bei 0
-
-                val newInstruction = TemporaryInstruction(
-                    step = stepNumber, // Hier wird der Schritt korrekt zugewiesen
-                    description = instructionDesc,
-                    imageUrl = instructionImageUrl
-                )
-                Log.d("CreateRecipeFragment", "newInstruction: $newInstruction")
-                if (editingInstructionIndex != null) {
-                    instructionsList[editingInstructionIndex!!] = newInstruction
-                    instructionsWithEquipments[newInstruction] = equipmentList
-                    addInstructionToTable(newInstruction, editingInstructionIndex)
-                    editingInstructionIndex = null
-                    binding.addInstructionsToRecipe.text = "Hinzufügen"
-                } else {
-                    instructionsList.add(newInstruction)
-                    instructionsWithEquipments[newInstruction] = equipmentList
-                    addInstructionToTable(newInstruction)
-                }
-
-                // Felder zurücksetzen
-                binding.editTextMultilineInstructions.text.clear()
-                clearDynamicEquipmentViews()
-                clearInstructionImage()
-
-                Log.d("CreateRecipeFragment", "Instruction: $newInstruction")
-            }
+        binding.instructionsImageUploader.setOnClickListener {
+            selectInstructionImage()
         }
     }
 
-    private fun clearInstructionImage() {
-        val cardView = binding.instructionsImageContainer
-        val placeholderIcon = binding.instructionsImagePlaceholderIc
-
-        // Entferne das aktuelle Bild
-        cardView.removeAllViews()
-        cardView.visibility = View.GONE
-
-        // Zeige den Platzhalter wieder an
-        placeholderIcon.visibility = View.VISIBLE
-
-        // Setze die Bild-URL zurück
-        tempInstructions.imageUrl = ""
-    }
-
-
-
-    private fun calculateRecipePrice(): Double {
-        return ingredientsList.sumOf { it.second.price }
-    }
-
-
-
-
-
-    private fun setupDropdownMenuType() {
-        // Adapter erstellen und mit Spinner verbinden
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            dropdownOptionsType
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.typeChoose.adapter = adapter
-
-        // Default-Wert festlegen
-        val defaultType = "Hauptspeise" // Dein gewünschter Standardwert
-        val defaultPosition = dropdownOptionsType.indexOf(defaultType)
-        if (defaultPosition >= 0) {
-            binding.typeChoose.setSelection(defaultPosition)
-        }
-
-        // Listener für Spinner-Auswahl
-        binding.typeChoose.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                dropdownOptionsType[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Optional: Aktion, wenn keine Auswahl getroffen wird
-            }
-        }
-    }
-    private fun setupPrepTimeSeekBar() {
-        val seekBar = binding.preptimeSeekbar
-        val prepTimeText = binding.preptimeText
-
-        seekBar.max = 120 + 24 + 7 // Maximal 10.000 Minuten (ca. 7 Tage)
-
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val timeText = when {
-                    progress <= 120 -> "$progress Minuten" // Minutenbereich
-                    progress in 121..144 -> "${(progress - 119)} Stunden" // Stundenbereich, mit Start bei 1
-                    else -> "${(progress - 143)} Tage" // Tagebereich, mit Start bei 1
-                }
-                prepTimeText.text = timeText
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-    private fun setupCookTimeSeekBar() {
-        val seekBar = binding.cooktimeSeekbar
-        val prepTimeText = binding.cooktimeText
-
-        seekBar.max = 120 + 24 + 7 // Maximal 10.000 Minuten (ca. 7 Tage)
-
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val timeText = when {
-                    progress <= 120 -> "$progress Minuten" // Minutenbereich
-                    progress in 121..144 -> "${(progress - 119)} Stunden" // Stundenbereich, mit Start bei 1
-                    else -> "${(progress - 143)} Tage" // Tagebereich, mit Start bei 1
-                }
-                prepTimeText.text = timeText
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-    private fun changePortions() {
-
-        binding.buttonPlus.setOnClickListener {
-            val currentPortions = binding.portionText.text.toString().toInt()
-            binding.portionText.text = (currentPortions + 1).toString()
-        }
-
-        binding.buttonMinus.setOnClickListener {
-            val currentPortions = binding.portionText.text.toString().toInt()
-            if (currentPortions > 1) {
-                binding.portionText.text = (currentPortions - 1).toString()
-            }
-        }
-    }
-    private fun setupSchwierigkeitButtonSelection() {
-        val buttons = listOf(
-            binding.optionAnfaenger,
-            binding.optionFortgeschritten,
-            binding.optionProfi
-        )
-
-        buttons.forEach { button ->
-            button.setOnClickListener {
-                buttons.forEach { it.isSelected = false }
-                button.isSelected = true
-                val difficulty = button.toString()
-
-                tempRecipe.difficulty = when (difficulty) {
-                    "Anfänger" -> DifficultyEnum.EASY
-                    "Fortgeschritten" -> DifficultyEnum.MEDIUM
-                    "Profi" -> DifficultyEnum.ADVANCED
-                    else -> null
-                }
-
-                updateButtonStyles(buttons)
-            }
-        }
-    }
-    private fun updateButtonStyles(buttons: List<Button>) {
-        buttons.forEach { button ->
-            if (button.isSelected) {
-                button.setBackgroundResource(R.drawable.new_recipe_background_active)
-                button.setTextColor(ContextCompat.getColor(requireContext(), R.color.pure_white))
-            } else {
-                button.setBackgroundResource(R.drawable.new_recipe_background)
-                button.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-            }
-        }
-    }
-    private fun setupDropdownMenuCategory() {
-        // Adapter erstellen und mit Spinner verbinden
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            dropdownOptionsCategory
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.categoryChooser.adapter = adapter
-
-        // Default-Wert festlegen
-        val defaultType = "Getreide"
-        val defaultPosition = dropdownOptionsCategory.indexOf(defaultType)
-        if (defaultPosition >= 0) {
-            binding.categoryChooser.setSelection(defaultPosition)
-        }
-
-        // Listener für Spinner-Auswahl
-        binding.categoryChooser.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                dropdownOptionsCategory[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-            }
-        }
-    }
-    private fun setupDropdownMenuUnit() {
-        // Adapter erstellen und mit Spinner verbinden
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            dropdownOptionsUnit
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.unitChooser.adapter = adapter
-
-        val defaultUnit = "g" // Beispielwert
-        val defaultPosition = dropdownOptionsUnit.indexOf(defaultUnit)
-        if (defaultPosition >= 0) {
-            binding.unitChooser.setSelection(defaultPosition)
-        }
-
-        // Listener für Spinner-Auswahl
-        binding.unitChooser.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                dropdownOptionsUnit[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-            }
-        }
-    }
-    private fun setupEquipmentButton() {
-        val utensilsContainer = binding.instructionEquipmentContainer
-        val addUtensilButton = binding.addEquipmentButton
-
-        addUtensilButton.setOnClickListener {
-            // Neues EditText-Feld für Utensil erstellen
-            val newEditText = EditText(requireContext()).apply {
-                layoutParams = ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(8, 8, 8, 8)
-                }
-                hint = "Utensil hinzufügen"
-                textSize = 14f
-                minWidth = 200
-                setBackgroundResource(R.drawable.new_recipe_background)
-                setPadding(16, 16, 16, 16)
-            }
-
-            // Hinzufügen von TextWatcher zur automatischen Aktualisierung der Daten
-            newEditText.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable?) {
-                    // Sicherstellen, dass Equipment-Daten aktualisiert werden
-                    val index = utensilsContainer.indexOfChild(newEditText)
-                    if (index != -1) {
-                        val currentText = s.toString().trim()
-                        if (currentText.isNotEmpty()) {
-                            // Optional: Equipment-Daten in einer Liste speichern
-                        }
-                    }
-                }
-            })
-
-            // Fügt das neue EditText vor dem Add-Button hinzu
-            val addButtonIndex = utensilsContainer.indexOfChild(addUtensilButton)
-            utensilsContainer.addView(newEditText, addButtonIndex)
-        }
-    }
-
-
-
-
-    private fun addInstructionToTable(instruction: TemporaryInstruction, index: Int? = null) {
-        val tableLayout = binding.instructionsTable
-
-        // Neue Tabellenreihe erstellen
+    private fun addIngredientToTable(name: String, amount: Int, unit: String) {
+        val tableLayout = binding.ingredientsTable
         val newRow = TableRow(requireContext()).apply {
             layoutParams = TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
@@ -606,13 +289,103 @@ class CreateRecipeFragment : Fragment() {
             setPadding(8, 8, 8, 8)
         }
 
-        // Beschreibung der Anweisung
+        val amountTextView = TextView(requireContext()).apply {
+            text = "$amount $unit"
+            setPadding(8, 8, 8, 8)
+        }
+
+        val nameTextView = TextView(requireContext()).apply {
+            text = name
+            setPadding(8, 8, 8, 8)
+        }
+
+        val editButton = ImageButton(requireContext()).apply {
+            setImageResource(R.drawable.ic_edit_black)
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            setOnClickListener {
+                val rowIndex = tableLayout.indexOfChild(newRow)
+                editIngredient(rowIndex)
+            }
+        }
+
+        val deleteButton = ImageButton(requireContext()).apply {
+            setImageResource(R.drawable.ic_close_black)
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            setOnClickListener {
+                val rowIndex = tableLayout.indexOfChild(newRow)
+                if (recipeTempDataHandler.removeIngredient(rowIndex)) {
+                    tableLayout.removeView(newRow)
+                }
+            }
+        }
+
+        newRow.apply {
+            addView(amountTextView)
+            addView(nameTextView)
+            addView(editButton)
+            addView(deleteButton)
+        }
+
+        tableLayout.addView(newRow)
+    }
+
+    private fun updateIngredientInTable(index: Int, name: String, amount: Int, unit: String) {
+        val tableLayout = binding.ingredientsTable
+        val row = tableLayout.getChildAt(index) as? TableRow ?: return
+
+        (row.getChildAt(0) as? TextView)?.text = "$amount $unit"
+        (row.getChildAt(1) as? TextView)?.text = name
+    }
+
+    private fun editIngredient(index: Int) {
+        val ingredientPair = recipeTempDataHandler.getIngredient(index) ?: return
+        val (tempFood, ingredientToEdit) = ingredientPair
+
+        binding.ingredientNameText.setText(tempFood.name)
+        binding.ingredientAmountText.setText(ingredientToEdit.amount?.toInt().toString())
+        binding.ingredientDescTextMultiline.setText(ingredientToEdit.description)
+        binding.ingredientPriceText.setText(ingredientToEdit.price.toString())
+        binding.switchOptional.isChecked = ingredientToEdit.isOptional
+
+        val categoryString = Converters.fromCategoryEnum(tempFood.category)
+        val categoryIndex = dropdownOptionsCategory.indexOf(categoryString)
+        if (categoryIndex != -1) {
+            binding.categoryChooser.setSelection(categoryIndex)
+        }
+
+        val unitString = Converters.fromUnitEnum(ingredientToEdit.unit)
+        val unitIndex = dropdownOptionsUnit.indexOf(unitString)
+        if (unitIndex != -1) {
+            binding.unitChooser.setSelection(unitIndex)
+        }
+
+        editingIngredientIndex = index
+        binding.addIngredientsToRecipe.text = "Aktualisieren"
+    }
+
+    private fun clearIngredientInputFields() {
+        binding.ingredientNameText.text.clear()
+        binding.ingredientAmountText.text.clear()
+        binding.ingredientDescTextMultiline.text.clear()
+        binding.ingredientPriceText.text.clear()
+        binding.switchOptional.isChecked = false
+    }
+
+    private fun addInstructionToTable(instruction: TemporaryInstruction, index: Int? = null) {
+        val tableLayout = binding.instructionsTable
+        val newRow = TableRow(requireContext()).apply {
+            layoutParams = TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+            )
+            setPadding(8, 8, 8, 8)
+        }
+
         val instructionTextView = TextView(requireContext()).apply {
             text = instruction.description
             setPadding(8, 8, 8, 8)
         }
 
-        // Bearbeiten-Button
         val editButton = ImageButton(requireContext()).apply {
             setImageResource(R.drawable.ic_edit_black)
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -622,24 +395,22 @@ class CreateRecipeFragment : Fragment() {
             }
         }
 
-        // Löschen-Button
         val deleteButton = ImageButton(requireContext()).apply {
             setImageResource(R.drawable.ic_close_black)
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             setOnClickListener {
                 val rowIndex = tableLayout.indexOfChild(newRow)
-                tableLayout.removeView(newRow)
-                if (rowIndex >= 0 && rowIndex < instructionsList.size) {
-                    instructionsList.removeAt(rowIndex)
-                    instructionsWithEquipments.remove(instruction)
+                if (recipeTempDataHandler.removeInstruction(rowIndex)) {
+                    tableLayout.removeView(newRow)
                 }
             }
         }
 
-        // Views zur Zeile hinzufügen
-        newRow.addView(instructionTextView)
-        newRow.addView(editButton)
-        newRow.addView(deleteButton)
+        newRow.apply {
+            addView(instructionTextView)
+            addView(editButton)
+            addView(deleteButton)
+        }
 
         if (index != null) {
             tableLayout.removeViewAt(index)
@@ -649,30 +420,41 @@ class CreateRecipeFragment : Fragment() {
         }
     }
 
-    // Hinzufügen der Funktion, um eine bestehende Instruction zu bearbeiten
     private fun editInstruction(index: Int) {
-        val instructionToEdit = instructionsList[index]
-        binding.editTextMultilineInstructions.setText(instructionToEdit.description)
+        val instructionPair = recipeTempDataHandler.getInstruction(index) ?: return
+        val (instruction, equipments) = instructionPair
 
-        // Lade zugehöriges Bild, falls vorhanden
-        if (!instructionToEdit.imageUrl.isNullOrBlank()) {
-            Log.d("CreateRecipeFragment", "Bild URL: ${instructionToEdit.imageUrl}")
-            displayInstructionImage(instructionToEdit.imageUrl!!)
+        binding.editTextMultilineInstructions.setText(instruction.description)
+
+        if (!instruction.imageUrl.isNullOrBlank()) {
+            displayInstructionImage(instruction.imageUrl!!)
         } else {
-            Log.d("CreateRecipeFragment", "Bild URL: ${instructionToEdit.imageUrl}")
-            clearInstructionImage() // Falls kein Bild vorhanden ist, setze die Ansicht zurück
+            clearInstructionImage()
         }
 
-        // Lade zugehöriges Equipment
-        val equipments = instructionsWithEquipments[instructionToEdit] ?: emptyList()
-
-        // Entferne alte Equipment-Views
         clearDynamicEquipmentViews()
+        fillEquipmentViews(equipments)
 
-        // Füge die Equipment-Views vor dem Add-Button hinzu
+        editingInstructionIndex = index
+        binding.addInstructionsToRecipe.text = "Aktualisieren"
+    }
+
+    private fun clearInstructionImage() {
+        val cardView = binding.instructionsImageContainer
+        val placeholderIcon = binding.instructionsImagePlaceholderIc
+
+        cardView.removeAllViews()
+        cardView.visibility = View.GONE
+        placeholderIcon.visibility = View.VISIBLE
+
+        recipeTempDataHandler.clearTempInstructionImage()
+    }
+
+    private fun fillEquipmentViews(equipments: List<TemporaryEquipment>) {
         val utensilsContainer = binding.instructionEquipmentContainer
         val addUtensilButton = binding.addEquipmentButton
-        equipments.forEach {
+
+        equipments.forEach { equipment ->
             val newEditText = EditText(requireContext()).apply {
                 layoutParams = ViewGroup.MarginLayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -680,28 +462,20 @@ class CreateRecipeFragment : Fragment() {
                 ).apply {
                     setMargins(8, 8, 8, 8)
                 }
-                setText(it.equipment)
+                setText(equipment.equipment)
                 textSize = 14f
                 minWidth = 200
                 setBackgroundResource(R.drawable.new_recipe_background)
                 setPadding(16, 16, 16, 16)
             }
-            // Füge das EditText vor dem Add-Button hinzu
+
             val addButtonIndex = utensilsContainer.indexOfChild(addUtensilButton)
             utensilsContainer.addView(newEditText, addButtonIndex)
         }
-
-        // Setze den aktuellen Index und aktualisiere den Button-Text
-        editingInstructionIndex = index
-        binding.addInstructionsToRecipe.text = "Aktualisieren"
     }
-
-
 
     private fun clearDynamicEquipmentViews() {
         val utensilsContainer = binding.instructionEquipmentContainer
-
-        // Schleife durch die Kinder-Views und entferne nur EditTexts
         for (i in utensilsContainer.childCount - 1 downTo 0) {
             val view = utensilsContainer.getChildAt(i)
             if (view is EditText) {
@@ -710,8 +484,6 @@ class CreateRecipeFragment : Fragment() {
         }
     }
 
-
-    // Equipment aus der UI einsammeln
     private fun collectEquipmentFromUI(): List<TemporaryEquipment> {
         val equipmentList = mutableListOf<TemporaryEquipment>()
         val equipmentContainer = binding.instructionEquipmentContainer
@@ -727,208 +499,270 @@ class CreateRecipeFragment : Fragment() {
         return equipmentList
     }
 
-    private fun addIngredientToTable(name: String, amount: Int, unit: String) {
-        val tableLayout = binding.ingredientsTable
-
-        // Neue Tabellenreihe erstellen
-        val newRow = TableRow(requireContext()).apply {
-            layoutParams = TableRow.LayoutParams(
-                TableRow.LayoutParams.MATCH_PARENT,
-                TableRow.LayoutParams.WRAP_CONTENT
-            )
-            setPadding(8, 8, 8, 8)
-        }
-
-        // Menge und Einheit
-        val amountTextView = TextView(requireContext()).apply {
-            text = "$amount $unit"
-            setPadding(8, 8, 8, 8)
-        }
-
-        // Name der Zutat
-        val nameTextView = TextView(requireContext()).apply {
-            text = name
-            setPadding(8, 8, 8, 8)
-        }
-
-        // Bearbeiten-Icon
-        val editButton = ImageButton(requireContext()).apply {
-            setImageResource(R.drawable.ic_edit_black)
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            setOnClickListener {
-                val rowIndex = tableLayout.indexOfChild(newRow)
-                editIngredient(rowIndex)
-            }
-        }
-
-        // Löschen-Icon
-        val deleteButton = ImageButton(requireContext()).apply {
-            setImageResource(R.drawable.ic_close_black)
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            setOnClickListener {
-                val rowIndex = tableLayout.indexOfChild(newRow)
-                tableLayout.removeView(newRow)
-                if (rowIndex >= 0 && rowIndex < ingredientsList.size) {
-                    ingredientsList.removeAt(rowIndex)
-                }
-            }
-        }
-
-        // Füge alle Views zur Zeile hinzu
-        newRow.addView(amountTextView)
-        newRow.addView(nameTextView)
-        newRow.addView(editButton)
-        newRow.addView(deleteButton)
-
-        // Füge die Zeile zur Tabelle hinzu
-        tableLayout.addView(newRow)
-    }
-
-    private fun updateIngredientInTable(index: Int, name: String, amount: Int, unit: String) {
-        val tableLayout = binding.ingredientsTable
-        val row = tableLayout.getChildAt(index) as TableRow
-
-        // Update the TextViews in the row
-        val amountTextView = row.getChildAt(0) as TextView
-        val nameTextView = row.getChildAt(1) as TextView
-
-        amountTextView.text = "$amount $unit"
-        nameTextView.text = name
-    }
-
-    private fun editIngredient(index: Int) {
-        // Get the ingredient to edit
-        val (tempFood, ingredientToEdit) = ingredientsList[index]
-
-        // Populate input fields with existing ingredient data
-        binding.ingredientNameText.setText(tempFood.name)
-        binding.ingredientAmountText.setText(ingredientToEdit.amount?.toInt().toString())
-        binding.ingredientDescTextMultiline.setText(ingredientToEdit.description)
-        binding.ingredientPriceText.setText(ingredientToEdit.price.toString())
-        binding.switchOptional.isChecked = ingredientToEdit.isOptional ?: false
-
-        // Set the category spinner to the current food's category
-        val categoryString = Converters.fromCategoryEnum(tempFood.category!!)
-        Log.d("CreateRecipeFragment", "categoryString: $categoryString, tempFood: ${tempFood.category}")
-        val categoryIndex = dropdownOptionsCategory.indexOf(categoryString)
-        if (categoryIndex != -1) {
-            binding.categoryChooser.setSelection(categoryIndex)
-        }
-
-        // Set the unit spinner to the current ingredient's unit
-        val unitIndex = dropdownOptionsUnit.indexOf(ingredientToEdit.unit?.name)
-        if (unitIndex != -1) {
-            binding.unitChooser.setSelection(unitIndex)
-        }
-
-        // Set the editing index and change button text
-        editingIngredientIndex = index
-        binding.addIngredientsToRecipe.text = "Aktualisieren"
-    }
-
-    private fun clearIngredientInputFields() {
-        binding.ingredientNameText.text.clear()
-        binding.ingredientAmountText.text.clear()
-        binding.ingredientDescTextMultiline.text.clear()
-        binding.ingredientPriceText.text.clear()
-        binding.switchOptional.isChecked = false
-    }
-
-
-
     private suspend fun saveRecipeToDatabase() {
-        val recipe = tempRecipe
-        val ingredients = ingredientsList.map { (food, ingredient) ->
-            TemporaryIngredient(
-                description = food.name,
-                amount = ingredient.amount,
-                unit = ingredient.unit,
-                price = ingredient.price,
-                isOptional = ingredient.isOptional ?: false
-            )
-        }
-        val instructions = instructionsList
-        val equipment = instructionsWithEquipments.values.flatten()
-        val food = ingredientsList.map { it.first }
-
-        Log.d("CreateRecipeFragment", "Speichere Rezept mit Details: $recipe")
-        Log.d("CreateRecipeFragment", "Speichere Zutaten: $ingredients")
-        Log.d("CreateRecipeFragment", "Speichere Anweisungen: $instructions")
-        Log.d("CreateRecipeFragment", "Speichere Equipment: $equipment")
-        Log.d("CreateRecipeFragment", "Speichere Food: $food")
-
         try {
-            val success = recipeController.addRecipeWithDetails(recipe, ingredients, instructions, equipment, food)
+            val success = recipeController.addRecipeWithDetails(
+                recipeTempDataHandler.getRecipeData(),
+                recipeTempDataHandler.getAllIngredients().map { it.second },
+                recipeTempDataHandler.getAllInstructions(),
+                recipeTempDataHandler.getAllEquipment().values.flatten(),
+                recipeTempDataHandler.getAllIngredients().map { it.first }
+            )
+
             if (success) {
-                Toast.makeText(requireContext(), "Rezept erfolgreich gespeichert!", Toast.LENGTH_SHORT).show()
+                showToast("Rezept erfolgreich gespeichert!")
+                recipeTempDataHandler.clearAll()
             } else {
-                Toast.makeText(requireContext(), "Fehler beim Speichern des Rezepts.", Toast.LENGTH_SHORT).show()
+                showToast("Fehler beim Speichern des Rezepts.")
             }
         } catch (e: Exception) {
             Log.e("CreateRecipeFragment", "Fehler beim Speichern des Rezepts: ${e.localizedMessage}")
-            Toast.makeText(requireContext(), "Fehler beim Speichern des Rezepts.", Toast.LENGTH_SHORT).show()
+            showToast("Fehler beim Speichern des Rezepts.")
         }
     }
 
-    // Image Selection & Permission Handling
-    private fun selectImage() {
-        filePickerLauncher.launch("image/*")
+    private fun setupDropdowns() {
+        setupDropdownMenuType()
+        setupDropdownMenuCategory()
+        setupDropdownMenuUnit()
     }
-    private fun selectInstructionImage() {
-        instructionImageFilePickerLauncher.launch("image/*")
-    }
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            selectImage()
-        } else {
-            showToast("Berechtigung erforderlich, um fortzufahren!")
+
+    private fun setupDropdownMenuType() {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            dropdownOptionsType
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        binding.typeChoose.adapter = adapter
+
+        val defaultType = "Hauptspeise"
+        val defaultPosition = dropdownOptionsType.indexOf(defaultType)
+        if (defaultPosition >= 0) {
+            binding.typeChoose.setSelection(defaultPosition)
+        }
+
+        binding.typeChoose.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                dropdownOptionsType[position]
+            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
-    // Activity Result Launchers
-    private val filePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            uploadImage(it)
-        } ?: showToast("Kein Bild ausgewählt")
-    }
-    private val instructionImageFilePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            uploadInstructionImage(it)
-        } ?: showToast("Kein Bild ausgewählt")
-    }
-    // Image Upload Handlers
-    private fun uploadImage(uri: Uri) {
-        val oldImageUrl = tempRecipe.imageUrl // Altes Bild merken
 
-        imageUploadController.uploadImage(
-            uri,
-            context = requireContext(),
-            uploadPath = "recipe_images/",
-            onSuccess = { imageUrl ->
-                // Neues Bild anzeigen und URL speichern
-                displayImageInCardView(imageUrl)
-                tempRecipe.imageUrl = imageUrl
+    private fun setupDropdownMenuCategory() {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            dropdownOptionsCategory
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
 
-                // Altes Bild löschen, wenn vorhanden
-                if (!oldImageUrl.isNullOrBlank()) {
-                    deleteImageFromS3(oldImageUrl)
+        binding.categoryChooser.adapter = adapter
+
+        val defaultType = "Getreide"
+        val defaultPosition = dropdownOptionsCategory.indexOf(defaultType)
+        if (defaultPosition >= 0) {
+            binding.categoryChooser.setSelection(defaultPosition)
+        }
+    }
+
+    private fun setupDropdownMenuUnit() {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            dropdownOptionsUnit
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        binding.unitChooser.adapter = adapter
+
+        val defaultUnit = "g"
+        val defaultPosition = dropdownOptionsUnit.indexOf(defaultUnit)
+        if (defaultPosition >= 0) {
+            binding.unitChooser.setSelection(defaultPosition)
+        }
+    }
+
+    private fun setupTimeSeekBar() {
+        setupPrepTimeSeekBar()
+        setupCookTimeSeekBar()
+    }
+
+    private fun setupPrepTimeSeekBar() {
+        val seekBar = binding.preptimeSeekbar
+        val prepTimeText = binding.preptimeText
+
+        seekBar.max = 120 + 24 + 7
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val timeText = when {
+                    progress <= 120 -> "$progress Minuten"
+                    progress in 121..144 -> "${(progress - 119)} Stunden"
+                    else -> "${(progress - 143)} Tage"
+                }
+                prepTimeText.text = timeText
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun setupCookTimeSeekBar() {
+        val seekBar = binding.cooktimeSeekbar
+        val cookTimeText = binding.cooktimeText
+
+        seekBar.max = 120 + 24 + 7
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val timeText = when {
+                    progress <= 120 -> "$progress Minuten"
+                    progress in 121..144 -> "${(progress - 119)} Stunden"
+                    else -> "${(progress - 143)} Tage"
+                }
+                cookTimeText.text = timeText
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun changePortions() {
+        binding.buttonPlus.setOnClickListener {
+            val currentPortions = binding.portionText.text.toString().toInt()
+            binding.portionText.text = (currentPortions + 1).toString()
+        }
+
+        binding.buttonMinus.setOnClickListener {
+            val currentPortions = binding.portionText.text.toString().toInt()
+            if (currentPortions > 1) {
+                binding.portionText.text = (currentPortions - 1).toString()
+            }
+        }
+    }
+
+    private fun setupSchwierigkeitButtonSelection() {
+        val buttons = listOf(
+            binding.optionAnfaenger,
+            binding.optionFortgeschritten,
+            binding.optionProfi
+        )
+
+        buttons.forEach { button ->
+            button.setOnClickListener {
+                buttons.forEach { it.isSelected = false }
+                button.isSelected = true
+
+                val difficulty = when (button.text.toString()) {
+                    "Anfänger" -> DifficultyEnum.EASY
+                    "Fortgeschritten" -> DifficultyEnum.MEDIUM
+                    "Profi" -> DifficultyEnum.ADVANCED
+                    else -> null
                 }
 
+                recipeTempDataHandler.updateRecipeDifficulty(difficulty ?: DifficultyEnum.EASY)
+                updateButtonStyles(buttons)
+            }
+        }
+    }
+
+    private fun updateButtonStyles(buttons: List<Button>) {
+        buttons.forEach { button ->
+            if (button.isSelected) {
+                button.setBackgroundResource(R.drawable.new_recipe_background_active)
+                button.setTextColor(ContextCompat.getColor(requireContext(), R.color.pure_white))
+            } else {
+                button.setBackgroundResource(R.drawable.new_recipe_background)
+                button.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            }
+        }
+    }
+
+    private fun setupEquipmentButton() {
+        binding.addEquipmentButton.setOnClickListener {
+            addNewEquipmentEditText()
+        }
+    }
+
+    private fun addNewEquipmentEditText() {
+        val newEditText = EditText(requireContext()).apply {
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(8, 8, 8, 8)
+            }
+            hint = "Utensil hinzufügen"
+            textSize = 14f
+            minWidth = 200
+            setBackgroundResource(R.drawable.new_recipe_background)
+            setPadding(16, 16, 16, 16)
+        }
+
+        val addButtonIndex = binding.instructionEquipmentContainer.indexOfChild(binding.addEquipmentButton)
+        binding.instructionEquipmentContainer.addView(newEditText, addButtonIndex)
+    }
+
+    private fun handleInstructionImageUpload(uri: Uri) {
+        val oldImageUrl = recipeTempDataHandler.getTempInstructionImage()
+
+        imageUploadController.uploadImage(
+            uri = uri,
+            path = "recipe_instructions_images/",
+            onSuccess = { imageUrl ->
+                displayInstructionImage(imageUrl)
+                recipeTempDataHandler.setTempInstructionImage(imageUrl)
+
+                if (!oldImageUrl.isNullOrBlank()) {
+                    deleteImage(oldImageUrl)
+                }
                 showToast("Bild erfolgreich hochgeladen")
             },
-            onError = { errorMessage ->
-                showToast(errorMessage)
-            }
+            onError = { showToast(it) }
         )
     }
 
+    private fun handleRecipeImageUpload(uri: Uri) {
+        val oldImageUrl = recipeTempDataHandler.getRecipeData().imageUrl
 
-    private fun deleteImageFromS3(imageUrl: String) {
+        imageUploadController.uploadImage(
+            uri = uri,
+            onSuccess = { imageUrl ->
+                imageUploadController.displayImage(
+                    imageUrl = imageUrl,
+                    container = binding.recipeImageContainer,
+                    placeholderView = binding.recipeImagePlaceholderIc
+                )
+                recipeTempDataHandler.updateRecipeImage(imageUrl)
+
+                if (oldImageUrl.isNotBlank()) {
+                    deleteImage(oldImageUrl)
+                }
+            },
+            onError = { showToast(it) }
+        )
+    }
+
+    private fun displayInstructionImage(imageUrl: String) {
+        val cardView = binding.instructionsImageContainer
+        val placeholderIcon = binding.instructionsImagePlaceholderIc
+
+        placeholderIcon.visibility = View.GONE
+        cardView.visibility = View.VISIBLE
+
+        imageUploadController.displayImage(
+            imageUrl = imageUrl,
+            container = cardView
+        )
+    }
+
+    private fun deleteImage(imageUrl: String) {
         imageUploadController.deleteImage(
             imageUrl = imageUrl,
             onSuccess = {
@@ -939,78 +773,42 @@ class CreateRecipeFragment : Fragment() {
             }
         )
     }
-    private fun uploadInstructionImage(uri: Uri) {
-        val oldImageUrl = tempInstructions.imageUrl // Altes Bild merken
 
-        imageUploadController.uploadInstructionImage(
-            uri = uri,
-            context = requireContext(),
-            onSuccess = { imageUrl ->
-                displayInstructionImage(imageUrl)
-                tempInstructions.imageUrl = imageUrl
-
-                // Altes Bild löschen
-                if (!oldImageUrl.isNullOrBlank()) {
-                    deleteImageFromS3(oldImageUrl)
-                }
-                showToast("Bild erfolgreich hochgeladen")
-            },
-            onError = { errorMessage ->
-                showToast(errorMessage)
-            }
-        )
-    }
-
-    // UI Updates for Displaying Images
-    private fun displayImageInCardView(imageUrl: String) {
-        val cardView = binding.recipeImageContainer
-        val placeholderIcon = binding.recipeImagePlaceholderIc
-        val placeholderText = binding.recipeImagePlaceholderTxt
-
-        // Hide placeholders
-        placeholderIcon.visibility = View.GONE
-        placeholderText.visibility = View.GONE
-
-        // Display the image
-        cardView.visibility = View.VISIBLE
-        loadImageIntoView(imageUrl, cardView)
-    }
-    private fun displayInstructionImage(imageUrl: String) {
-        val cardView = binding.instructionsImageContainer
-        val placeholderIcon = binding.instructionsImagePlaceholderIc
-
-        // Hide placeholder
-        placeholderIcon.visibility = View.GONE
-
-        // Display the image
-        cardView.visibility = View.VISIBLE
-        loadImageIntoView(imageUrl, cardView)
-    }
-    // Common Image Loading Logic
-    private fun loadImageIntoView(imageUrl: String, container: ViewGroup) {
-        val imageView = ImageView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }
-
-        Glide.with(this)
-            .load(imageUrl)
-            .placeholder(R.drawable.placeolder_receipt)
-            .error(R.drawable.bg_darkgreen)
-            .into(imageView)
-
-        container.removeAllViews()
-        container.addView(imageView)
-    }
-    // Utility Method
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun selectImage() {
+        filePickerLauncher.launch("image/*")
+    }
 
+    private fun selectInstructionImage() {
+        instructionImageFilePickerLauncher.launch("image/*")
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            selectImage()
+        } else {
+            showToast("Berechtigung erforderlich, um fortzufahren!")
+        }
+    }
+
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { handleRecipeImageUpload(it) }
+            ?: showToast("Kein Bild ausgewählt")
+    }
+
+    private val instructionImageFilePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { handleInstructionImageUpload(it) }
+            ?: showToast("Kein Bild ausgewählt")
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

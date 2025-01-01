@@ -1,23 +1,16 @@
 package com.example.projektmbun.controller
 
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
-import com.example.projektmbun.views.temp_data_models.TemporaryFood
-import com.example.projektmbun.views.temp_data_models.TemporaryIngredient
-import com.example.projektmbun.views.temp_data_models.TemporaryInstruction
-import com.example.projektmbun.views.temp_data_models.TemporaryRecipe
 
 class RecipeValidator(
-    private val tempRecipe: TemporaryRecipe,
-    private val ingredientsList: MutableList<Pair<TemporaryFood, TemporaryIngredient>>,
-    private val instructionsList: MutableList<TemporaryInstruction>,
-    val context: Context) {
+    private val recipeTempDataHandler: RecipeTempDataHandler,
+    val context: Context
+) {
 
     fun validateRecipeInfoFields(recipeTitle: String, recipePortions: String, shortDesc: String, prepTime: Int, recipeSrc: String): Boolean {
         var isValid = true
 
-        if(tempRecipe.imageUrl.isBlank()) {
+        if(recipeTempDataHandler.getRecipeData().imageUrl.isBlank()) {
             isValid = false
         }
         if (recipeTitle.isBlank()) {
@@ -66,10 +59,10 @@ class RecipeValidator(
     }
 
     fun validateIngredientExistence(): Boolean {
-        return ingredientsList.isNotEmpty()
+        return recipeTempDataHandler.getAllIngredients().isNotEmpty()
     }
 
     fun validateInstructionExistence(): Boolean {
-        return instructionsList.isNotEmpty()
+        return recipeTempDataHandler.getAllInstructions().isNotEmpty()
     }
 }

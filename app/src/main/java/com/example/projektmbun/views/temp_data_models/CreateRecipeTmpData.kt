@@ -28,14 +28,14 @@ data class TemporaryRecipe(
 data class TemporaryIngredient(
     var description: String? = "",
     var amount: Double? = 0.0,
-    var unit: UnitsEnum? = null,
+    var unit: UnitsEnum = UnitsEnum.UNBEKANNT,
     var price: Double = 0.0,
     var isOptional: Boolean = false
 )
 
 data class TemporaryFood(
     var name: String = "",
-    var category: FoodCategoryEnum? = null,
+    var category: FoodCategoryEnum = FoodCategoryEnum.UNBEKANNT,
 )
 
 data class TemporaryInstruction(

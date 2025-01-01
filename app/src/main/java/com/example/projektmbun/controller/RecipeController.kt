@@ -59,11 +59,12 @@ class RecipeController(private val recipeService: RecipeService) {
                 popularityScore = recipe.popularityScore
             )
 
-            val mappedIngredients = ingredients.map { tempIngredient ->
+            val mappedIngredients = ingredients.zip(food) { tempIngredient, tempFood ->
+                Log.d("RecipeController", "$tempIngredient")
                 Ingredient(
                     id = null,
                     recipeId = null, // Wird im Service gesetzt
-                    foodId = null,
+                    foodId = tempFood.name,
                     description = tempIngredient.description,
                     amount = tempIngredient.amount ?: 0.0,
                     unit = tempIngredient.unit ?: UnitsEnum.UNBEKANNT,
