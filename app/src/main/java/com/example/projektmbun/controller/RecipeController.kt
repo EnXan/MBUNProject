@@ -223,8 +223,16 @@ class RecipeController(private val recipeService: RecipeService) {
      * Helper function to check if the units of an ingredient and a food card are compatible.
      */
     private fun areUnitsCompatible(ingredient: Ingredient, foodCard: FoodCard): Boolean {
-        return ingredient.unit == foodCard.unit
+        val amount = ingredient.amount ?: 0.0 // Wenn amount null ist, verwende standardmäßig 0.0
+
+        return if (ingredient.unit == UnitsEnum.NACH_GESCHMACK) {
+            foodCard.quantity > 0 // Für NACH_GESCHMACK nur prüfen, ob quantity > 0
+        } else {
+            ingredient.unit == foodCard.unit && foodCard.quantity >= amount
+        }
     }
+
+
 
     suspend fun getIngredientsByRecipeId(recipeId: Int): List<Ingredient> {
         return recipeService.getIngredientsByRecipeId(recipeId)

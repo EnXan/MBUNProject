@@ -24,6 +24,7 @@ enum class UnitsEnum(val toBaseMultiplier: Double) {
     DOSE(1.0),
     BECHER(1.0),
     UNBEKANNT(1.0);
+    //1 Bund = 250g
 
     /**
      * Converts a quantity to the base unit.

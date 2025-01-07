@@ -42,7 +42,7 @@ class CreateRecipeFragment : Fragment() {
     private var editingIngredientIndex: Int? = null
     private var editingInstructionIndex: Int? = null
 
-    private val dropdownOptionsType = listOf("Frühstück", "Hauptspeise", "Abendbrot", "Nachtisch", "Snack", "Beilage", "Dip")
+    private val dropdownOptionsType = listOf("Vorspeise", "Hauptspeise", "Abendbrot", "Nachtisch", "Snack", "Beilage", "Dip")
     private val dropdownOptionsCategory = FoodCategoryEnum.entries
         .filter { it != FoodCategoryEnum.UNBEKANNT }
         .map { Converters.fromCategoryEnum(it) }
@@ -586,7 +586,26 @@ class CreateRecipeFragment : Fragment() {
         if (defaultPosition >= 0) {
             binding.unitChooser.setSelection(defaultPosition)
         }
+
+        binding.unitChooser.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedUnit = dropdownOptionsUnit[position]
+                val unitEnum = Converters.toUnitEnum(selectedUnit)
+
+                if (unitEnum == UnitsEnum.NACH_GESCHMACK) {
+                    binding.ingredientAmountText.apply {
+                        setText("1")
+                        isEnabled = false
+                    }
+                } else {
+                    binding.ingredientAmountText.isEnabled = true
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
     }
+
 
     private fun setupTimeSeekBar() {
         setupPrepTimeSeekBar()
