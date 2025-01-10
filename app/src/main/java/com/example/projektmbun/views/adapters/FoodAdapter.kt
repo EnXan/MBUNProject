@@ -103,8 +103,6 @@ class FoodAdapter(private var foodLocalSet: List<FoodLocal>,
 
             var selectedDate = dataHolder?.selectedDate
             var selectedQuantity = dataHolder?.quantity
-            Log.d("FoodAdapter", "selectedDate: $selectedDate")
-            Log.d("FoodAdapter", "selectedQuantity: $selectedQuantity")
 
 
 

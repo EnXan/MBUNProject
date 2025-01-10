@@ -389,7 +389,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="5dp"
-                    android:textSize="10sp"
+                    android:textSize="9sp"
                     android:text="Anfänger"
                     android:background="@drawable/new_recipe_background" />
 
@@ -398,8 +398,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="10sp"
-                    android:text="Fortgeschritten"
+                    android:textSize="9sp"
+                    android:text="Hobbykoch"
                     android:background="@drawable/new_recipe_background" />
 
                 <Button
@@ -408,7 +408,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
-                    android:textSize="10sp"
+                    android:textSize="9sp"
                     android:text="Profi"
                     android:background="@drawable/new_recipe_background" />
             </LinearLayout>

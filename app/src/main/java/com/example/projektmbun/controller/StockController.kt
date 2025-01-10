@@ -6,7 +6,6 @@ import android.util.Log
 import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.StockDao
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
-import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -38,7 +37,9 @@ class StockController(private val stockDao: StockDao, private val foodCardDao: F
 
         return withContext(Dispatchers.IO) {
             try {
-                foodCardDao.insertFoodCard(updatedFoodCard)
+                val result = foodCardDao.insertFoodCard(updatedFoodCard)
+                Log.d("InsertFoodCard", "Result: $result")
+                result
             } catch (e: SQLiteConstraintException) {
                 Log.e("UpdateError", "SQLiteConstraintException: ${e.message}. FoodCard: $updatedFoodCard, StockID: $stockId")
                 null

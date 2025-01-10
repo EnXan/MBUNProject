@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 import androidx.navigation.findNavController
@@ -43,7 +44,9 @@ class MainActivity : AppCompatActivity(), NetworkMonitor.NetworkStatusListener {
         // Set up BottomNavigationView with NavController
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-        binding.bottomNavigation.setupWithNavController(navController)
+        val bottomNavigationView = binding.bottomNavigation
+        bottomNavigationView.itemActiveIndicatorColor = ContextCompat.getColorStateList(this, R.color.primary_green)
+        bottomNavigationView.setupWithNavController(navController)
 
         // Initialize network monitor
         networkMonitor = NetworkMonitor(this)

@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
-import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import kotlinx.coroutines.flow.Flow
 
 

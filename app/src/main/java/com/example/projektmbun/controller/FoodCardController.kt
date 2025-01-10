@@ -5,9 +5,11 @@ import android.util.Log
 import com.example.projektmbun.exceptions.FoodCardCreationException
 import com.example.projektmbun.exceptions.FoodCardUpdateException
 import com.example.projektmbun.models.cloud.service.FoodService
+import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
 import com.example.projektmbun.models.data_structure.food_card.FoodCardWithDetails
+import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -98,6 +100,16 @@ class FoodCardController(
         }
     }
 
+    private fun isValidGermanDate(date: String): Boolean {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+            LocalDate.parse(date, formatter)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     /**
      * Updates the expiry date of a food card.
      * @param foodCardId The ID of the food card to update.
@@ -106,18 +118,18 @@ class FoodCardController(
      * @throws FoodCardUpdateException if the update fails.
      */
     suspend fun updateExpiryDateByFoodCardId(foodCardId: Int, newExpiryDate: String) {
-        if (!isValidIsoDate(newExpiryDate)) {
-            throw IllegalArgumentException("Invalid expiry date: $newExpiryDate")
+        if (!isValidGermanDate(newExpiryDate)) {
+            throw IllegalArgumentException("Ungültiges Datum: $newExpiryDate")
         }
 
         withContext(Dispatchers.IO) {
             try {
                 val rowsUpdated = foodCardDao.updateExpiryDateByFoodCardId(foodCardId, newExpiryDate)
                 if (rowsUpdated == 0) {
-                    throw FoodCardUpdateException("Failed to update FoodCard with ID: $foodCardId - No rows updated.")
+                    throw FoodCardUpdateException("Aktualisierung der FoodCard mit ID: $foodCardId fehlgeschlagen")
                 }
             } catch (e: Exception) {
-                Log.e("FoodCardController", "Error updating expiry date: ${e.localizedMessage}")
+                Log.e("FoodCardController", "Fehler beim Aktualisieren des Ablaufdatums: ${e.localizedMessage}")
                 throw e
             }
         }
@@ -156,19 +168,19 @@ class FoodCardController(
      */
     suspend fun getFoodCardsInStock(): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
         try {
-            // 1. Fetch FoodCards in stock from the local database
             val foodCards = foodCardDao.getFoodCardsInStock()
-
-            // 2. Extract food IDs from the FoodCards
             val foodIds = foodCards.map { it.foodId }
+            val foods = try {
+                foodService.getFoodsByNames(foodIds)
+            } catch (e: Exception) {
+                // Fallback to local food data if Supabase is not available
+                foodIds.map { FoodLocal(name = it, category = FoodCategoryEnum.OBST) }
+            }
 
-            // 3. Fetch Food details from Supabase using the extracted food IDs
-            val foods = foodService.getFoodsByNames(foodIds)
-
-            // 4. Combine FoodCards with their corresponding Food details
-            foodCards.mapNotNull { foodCard ->
+            foodCards.map { foodCard ->
                 val food = foods.find { it.name == foodCard.foodId }
-                if (food != null) FoodCardWithDetails(foodCard, food) else null
+                    ?: FoodLocal(name = foodCard.foodId, category = FoodCategoryEnum.OBST)
+                FoodCardWithDetails(foodCard, food)
             }
         } catch (e: Exception) {
             Log.e("FoodCardController", "Error fetching FoodCards in stock: ${e.localizedMessage}")

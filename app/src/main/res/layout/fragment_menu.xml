@@ -51,6 +51,15 @@
                 android:textStyle="bold"
                 android:textSize="16sp" />
 
+            <TextView
+                android:id="@+id/leerer_vorrat_placeholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/green_dark"
+                android:gravity="center"
+                android:text="Dein Vorrat ist leer"
+                />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/stock_recycler_view"
                 android:layout_width="match_parent"
@@ -123,6 +132,16 @@
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
+                <TextView
+                    android:id="@+id/leere_haltbarkeit_placeholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="Keine Haltbarkeit gefunden"
+                    android:textColor="@color/green_dark"
+                    android:textSize="11sp" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/expiry_date_recycler_view"
                     android:layout_width="match_parent"
@@ -132,15 +151,7 @@
                     android:scrollbars="vertical"
                     android:nestedScrollingEnabled="true"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/leere_haltbarkeit"
-                    android:visibility="gone"
-                    android:textAlignment="center"
-                    android:textColor="@color/text_background"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true" />
+
             </RelativeLayout>
 
             <RelativeLayout
@@ -162,6 +173,16 @@
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
+                <TextView
+                    android:id="@+id/leere_routine_placeholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="Keine Routinen gefunden"
+                    android:textColor="@color/green_dark"
+                    android:textSize="11sp" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/routine_recycler_view"
                     android:layout_width="match_parent"
@@ -170,74 +191,9 @@
                     android:layout_marginTop="8dp"
                     android:scrollbars="vertical"
                     android:nestedScrollingEnabled="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/leere_routine"
-                    android:textAlignment="center"
-                    android:visibility="gone"
-                    android:textColor="@color/text_background"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true" />
             </RelativeLayout>
         </LinearLayout>
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
-
-
-    <com.github.clans.fab.FloatingActionMenu
-        xmlns:fab="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/fab_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        app:menu_icon="@drawable/fab_add"
-        fab:menu_labels_colorNormal="@android:color/transparent"
-        fab:menu_labels_textColor="@color/pure_white"
-        fab:menu_labels_showShadow="false"
-        fab:menu_colorNormal="@color/primary_green_light"
-        fab:menu_colorPressed="@color/primary_green"
-        fab:menu_colorRipple="@color/primary_accent_dark"
-        >
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fab_rezepte"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/fab_add"
-            fab:fabCustomSize="10dp"
-            fab:menu_backgroundColor="@android:color/transparent"
-            app:fab_label="Rezepte"
-            app:fab_colorNormal="@color/primary_green"
-            app:fab_colorPressed="@color/primary_green"
-            app:fab_colorRipple="@color/primary_green" />
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fab_routinen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_label="Routinen"
-            android:src="@drawable/fab_add"
-            fab:menu_backgroundColor="@android:color/transparent"
-            fab:fabCustomSize="10dp"
-            app:fab_colorNormal="@color/tertiary_teal_light"
-            app:fab_colorPressed="@color/primary_green"
-            app:fab_colorRipple="@color/primary_green" />
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fab_lebensmittel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_label="Lebensmittel"
-            fab:menu_backgroundColor="@android:color/transparent"
-            fab:fabCustomSize="10dp"
-            android:src="@drawable/fab_add"
-            app:fab_colorNormal="@color/primary_green"
-            app:fab_colorPressed="@color/primary_green"
-            app:fab_colorRipple="@color/primary_green" />
-
-    </com.github.clans.fab.FloatingActionMenu>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

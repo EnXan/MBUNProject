@@ -124,7 +124,7 @@ class StockFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             fetchFoodWithFilters(filters)
         }
-
+        loadFoodItems()
         observeFoodCounter()
 
         filters.forEach { filter ->
@@ -176,6 +176,26 @@ class StockFragment : Fragment() {
         }
     }
 
+    private fun loadFoodItems() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val foodItems = foodController.getAllFood().first() // Aktuelle Liste abrufen
+                withContext(Dispatchers.Main) {
+                    if (foodItems.isEmpty()) {
+                        binding.stockErrorText.text = "Keine Lebensmittel gefunden"
+                        binding.stockErrorText.visibility = View.VISIBLE
+                    } else {
+                        binding.stockErrorText.visibility = View.GONE
+                        updateRecyclerView(foodItems)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("StockFragment", "Error loading food items", e)
+                }
+            }
+        }
+    }
 
 
     private fun observeFoodFlow() {

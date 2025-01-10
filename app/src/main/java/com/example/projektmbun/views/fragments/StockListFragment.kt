@@ -81,7 +81,7 @@ class StockListFragment : Fragment() {
 
         foodCounterButton = binding.btnFoodCounter
 
-        val recyclerView: RecyclerView = binding.foodlistView
+        val recyclerView: RecyclerView = binding.foodlistStockView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         stockFoodCardListAdapter = StockFoodCardListAdapter(emptyList(), requireContext())
@@ -98,12 +98,19 @@ class StockListFragment : Fragment() {
 
     private fun loadFoodCards() {
         lifecycleScope.launch(Dispatchers.IO) {
-            // Lade FoodCards aus der Vorratsliste
             val stockFoodCardWithFoodList = foodCardController.getFoodCardsInStock()
-            Log.d("StockListFragment", "FoodCards loaded: $stockFoodCardWithFoodList")
-
             withContext(Dispatchers.Main) {
-                stockFoodCardListAdapter.updateData(stockFoodCardWithFoodList)
+                if (stockFoodCardWithFoodList.isEmpty()) {
+                    binding.stocklistErrorText.apply {
+                        text = "Keine Lebensmittel im Vorrat"
+                        visibility = View.VISIBLE
+                    }
+                    binding.foodlistStockView.visibility = View.GONE
+                } else {
+                    binding.stocklistErrorText.visibility = View.GONE
+                    binding.foodlistStockView.visibility = View.VISIBLE
+                    stockFoodCardListAdapter.updateData(stockFoodCardWithFoodList)
+                }
             }
         }
     }

@@ -92,7 +92,7 @@ class QuantityPickerFragment(
     }
 
     private fun setupUnitPicker(wheelPickerUnit: WheelPicker, units: List<UnitsEnum>, initialUnit: UnitsEnum) {
-        wheelPickerUnit.data = units.map { it.toString() }
+        wheelPickerUnit.data = units.map { Converters.fromUnitEnum(it) }
         val initialPosition = units.indexOf(initialUnit).takeIf { it >= 0 } ?: 0
         wheelPickerUnit.post { wheelPickerUnit.selectedItemPosition = initialPosition }
     }

@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.routine.Routine
 import com.example.projektmbun.models.data_structure.stock.Stock
-import com.example.projektmbun.utils.enums.FoodCardStateEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
 
 /**

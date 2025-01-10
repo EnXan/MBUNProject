@@ -65,6 +65,7 @@ android {
         }
     }
 
+
 }
 
 dependencies {
@@ -77,6 +78,7 @@ dependencies {
     implementation (libs.glide.v4151)
     implementation(libs.litert)
     implementation(libs.litert.support.api)
+    testImplementation(libs.jupiter.junit.jupiter)
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.robolectric)
@@ -97,6 +99,10 @@ dependencies {
     testImplementation(libs.turbine)
     implementation(libs.aws.android.sdk.s3)
     implementation(libs.github.glide)
+    androidTestImplementation(libs.androidx.test.espresso.espresso.core.v351.x2)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.rules)
+    androidTestImplementation(libs.androidx.junit.v115)
     implementation (libs.fab)
     implementation (libs.androidx.activity.ktx)
     implementation (libs.androidx.fragment.ktx)
@@ -137,9 +143,11 @@ dependencies {
     testImplementation(libs.mockito.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.contrib)
+    testImplementation(libs.robolectric.v49)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-testImplementation (libs.mockito.kotlin)
+    testImplementation (libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.mockito.android)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

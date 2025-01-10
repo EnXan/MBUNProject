@@ -74,7 +74,29 @@ class ExpiryDateMenuAdapter(private var foodCardSet: List<FoodCardWithDetails>) 
                         DrawableCompat.wrap(it)
                     }
 
+            fun interpolateColor(startColor: Int, endColor: Int, factor: Float): Int {
+                val startRed = Color.red(startColor)
+                val startGreen = Color.green(startColor)
+                val startBlue = Color.blue(startColor)
 
+                val endRed = Color.red(endColor)
+                val endGreen = Color.green(endColor)
+                val endBlue = Color.blue(endColor)
+
+                val red = (startRed + (endRed - startRed) * factor).toInt()
+                val green = (startGreen + (endGreen - startGreen) * factor).toInt()
+                val blue = (startBlue + (endBlue - startBlue) * factor).toInt()
+
+                return Color.rgb(red, green, blue)
+            }
+
+            // Farbskala definieren
+            val freshColor = Color.parseColor("#7dba7b") // Pastellgrün
+            val warningColor = Color.parseColor("#cc996c") // Pastellorange
+            val expiredColor = Color.parseColor("#cc6c6c") // Pastellrot
+
+
+            // Ablaufberechnung
             expiryDate?.let {
                 val sdf = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                 val today = Calendar.getInstance().time
@@ -84,25 +106,23 @@ class ExpiryDateMenuAdapter(private var foodCardSet: List<FoodCardWithDetails>) 
                     val diff = expiryDateParsed.time - today.time
                     val daysUntilExpiry = (diff / (1000 * 60 * 60 * 24)).toInt()
 
-                    // Calculate color based on daysUntilExpiry
-                    val greenValue = when {
-                        daysUntilExpiry > 30 -> 255 // Fully green for dates more than 30 days away
-                        daysUntilExpiry > 0 -> (daysUntilExpiry / 30.0 * 255).toInt() // Gradual transition
-                        else -> 0 // Red if expired or today
-                    }
-                    val redValue = when {
-                        daysUntilExpiry > 30 -> 0 // No red for dates more than 30 days away
-                        daysUntilExpiry > 0 -> (255 - (daysUntilExpiry / 30.0 * 255)).toInt() // Gradual transition
-                        else -> 255 // Fully red if expired or today
+                    val color = when {
+                        daysUntilExpiry > 30 -> freshColor // Frisch: Pastellgrün
+                        daysUntilExpiry > 0 -> {
+                            // Interpolieren zwischen frisch und ablaufend
+                            val factor = daysUntilExpiry / 30.0f // Faktor für Interpolation
+                            interpolateColor(warningColor, freshColor, factor)
+                        }
+                        else -> expiredColor // Abgelaufen: Pastellrot
                     }
 
-                    val color = Color.rgb(redValue, greenValue, 0)
-                    drawable?.setTint(color) // Setzt die berechnete Farbe auf das Drawable
+                    drawable?.setTint(color) // Farbe setzen
                 }
             } ?: run {
                 // Default tint color for null expiry date
                 drawable?.setTint(ContextCompat.getColor(cardBackground.context, R.color.gray))
             }
+
 
             // Set the tinted drawable back to the background
             cardBackground.background = drawable

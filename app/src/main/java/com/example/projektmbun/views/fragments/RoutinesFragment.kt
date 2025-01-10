@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.RoutineController
@@ -58,17 +57,10 @@ class RoutinesFragment : Fragment() {
         binding.searchBar.scanIcon.setImageDrawable(addIcon)
 
         // RecyclerView einrichten
-        val recyclerView: RecyclerView = binding.routineRecyclerView
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.routineRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        // Adapter einrichten
-        lifecycleScope.launch {
-            val routines = routineController.getAllRoutines()
-            routineAdapter = RoutineAdapter(routines, context, lifecycleScope, routineController, foodCardController)
-            recyclerView.adapter = routineAdapter
-        }
-
-        observeRoutineCounter()
+        // Routinen laden
+        loadRoutines()
 
         // "+"-Button Listener hinzufügen
         binding.searchBar.scanIcon.setOnClickListener {
@@ -84,13 +76,37 @@ class RoutinesFragment : Fragment() {
         return view
     }
 
+    private fun loadRoutines() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val routines = routineController.getAllRoutines()
+                withContext(Dispatchers.Main) {
+                    if (routines.isNotEmpty()) {
+                        binding.routineRecyclerView.visibility = View.VISIBLE
+                        binding.routineErrorText.visibility = View.GONE
+                        routineAdapter = RoutineAdapter(routines, requireContext(), lifecycleScope, routineController, foodCardController)
+                        binding.routineRecyclerView.adapter = routineAdapter
+                    } else {
+                        binding.routineRecyclerView.visibility = View.GONE
+                        binding.routineErrorText.text = "Keine Routinen gefunden"
+                        binding.routineErrorText.visibility = View.VISIBLE
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.routineRecyclerView.visibility = View.GONE
+                    binding.routineErrorText.text = "Ein Fehler ist aufgetreten"
+                    binding.routineErrorText.visibility = View.VISIBLE
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
     private fun createNewRoutine(routineName: String) {
         lifecycleScope.launch {
-
             try {
-                val currentDateAsString: String = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(
-                    Date()
-                )
+                val currentDateAsString: String = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
 
                 val newRoutine = Routine(
                     name = routineName,
@@ -100,9 +116,8 @@ class RoutinesFragment : Fragment() {
                 )
                 routineController.addOrUpdateRoutine(newRoutine)
 
-                // Aktualisieren des Adapters mit der neuen Routine
-                val updatedRoutines = routineController.getAllRoutines()
-                routineAdapter.updateData(updatedRoutines)
+                // Routinenliste aktualisieren
+                loadRoutines()
 
                 // Suchfeld leeren und Benutzer benachrichtigen
                 binding.searchBar.searchEditText.text.clear()
@@ -112,19 +127,6 @@ class RoutinesFragment : Fragment() {
             }
         }
     }
-
-    private fun observeRoutineCounter() {
-        lifecycleScope.launch {
-            routineController.getRoutineCountFlow()
-                .distinctUntilChanged()
-                .collect { count ->
-                    withContext(Dispatchers.Main) {
-                        binding.btnFoodCounter.text = count.toString() // Setze den aktualisierten Wert
-                    }
-                }
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

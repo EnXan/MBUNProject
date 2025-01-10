@@ -171,7 +171,7 @@ class CreateRecipeFragment : Fragment() {
                         ingredientPrice!!,
                         isIngredientOptional
                     )) {
-                    updateIngredientInTable(editingIngredientIndex!!, ingredientName, ingredientAmount.toInt(), ingredientUnit.toString())
+                    updateIngredientInTable(editingIngredientIndex!!, ingredientName, ingredientAmount.toInt(), ingredientUnit)
                     editingIngredientIndex = null
                     binding.addIngredientsToRecipe.text = "Hinzufügen"
                 }
@@ -185,7 +185,7 @@ class CreateRecipeFragment : Fragment() {
                     ingredientPrice!!,
                     isIngredientOptional
                 )
-                addIngredientToTable(ingredientName, ingredientAmount.toInt(), ingredientUnit.toString())
+                addIngredientToTable(ingredientName, ingredientAmount.toInt(), ingredientUnit)
             }
             clearIngredientInputFields()
         }
@@ -279,7 +279,10 @@ class CreateRecipeFragment : Fragment() {
         }
     }
 
-    private fun addIngredientToTable(name: String, amount: Int, unit: String) {
+    private fun addIngredientToTable(name: String, amount: Int, unit: UnitsEnum) {
+        val stringUnit = Converters.fromUnitEnum(unit)
+
+
         val tableLayout = binding.ingredientsTable
         val newRow = TableRow(requireContext()).apply {
             layoutParams = TableRow.LayoutParams(
@@ -290,7 +293,7 @@ class CreateRecipeFragment : Fragment() {
         }
 
         val amountTextView = TextView(requireContext()).apply {
-            text = "$amount $unit"
+            text = "$amount $stringUnit"
             setPadding(8, 8, 8, 8)
         }
 
@@ -329,11 +332,14 @@ class CreateRecipeFragment : Fragment() {
         tableLayout.addView(newRow)
     }
 
-    private fun updateIngredientInTable(index: Int, name: String, amount: Int, unit: String) {
+    private fun updateIngredientInTable(index: Int, name: String, amount: Int, unit: UnitsEnum) {
+
+        val stringUnit = Converters.fromUnitEnum(unit)
+
         val tableLayout = binding.ingredientsTable
         val row = tableLayout.getChildAt(index) as? TableRow ?: return
 
-        (row.getChildAt(0) as? TextView)?.text = "$amount $unit"
+        (row.getChildAt(0) as? TextView)?.text = "$amount $stringUnit"
         (row.getChildAt(1) as? TextView)?.text = name
     }
 

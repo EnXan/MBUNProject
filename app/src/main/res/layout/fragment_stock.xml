@@ -162,6 +162,16 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Fehlertext -->
+        <TextView
+            android:id="@+id/stock_error_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:textColor="@color/black" />
+
         <!-- RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/food_recycler_view"

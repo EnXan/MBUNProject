@@ -197,53 +197,22 @@ class StockFoodCardListAdapter(private var foodCardSet: List<FoodCardWithDetails
     }
 
     fun updateData(newFoodSet: List<FoodCardWithDetails>) {
-        Log.d("StockFoodCardAdapter", "Starting updateData...")
-
-        // Loggen der eingehenden Daten
-        Log.d("StockFoodCardAdapter", "New foodCardSet size: ${newFoodSet.size}")
-        newFoodSet.forEach { item ->
-            Log.d(
-                "StockFoodCardAdapter",
-                "New Item: ID=${item.foodCard.id}, Name=${item.foodLocal.name}, Quantity=${item.foodCard.quantity}, Unit=${item.foodCard.unit}"
-            )
-        }
-
         foodCardSet = newFoodSet
-        selectedFoodCardMap.clear()
 
-        // Verarbeiten und Loggen der ausgewählten Karten
+        // Bestehende Werte im Map beibehalten und nur neue hinzufügen/aktualisieren
         newFoodSet.forEach { foodCardWithDetails ->
             val foodCard = foodCardWithDetails.foodCard
-            val expiryDate = foodCard.expiryDate ?: "Haltbar bis"
+            val foodName = foodCardWithDetails.foodLocal.name
 
-            // Verwenden der ID als Schlüssel
-            selectedFoodCardMap[foodCard.id.toString()] = SelectedFoodCardHolder(
-                selectedDate = expiryDate,
-                quantity = "${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
-            )
-
-            // Log für jeden Eintrag in der Map
-            Log.d(
-                "StockFoodCardAdapter",
-                "Mapped: ID=${foodCard.id}, Name=${foodCardWithDetails.foodLocal.name}, ExpiryDate=$expiryDate, Quantity=${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
-            )
+            if (!selectedFoodCardMap.containsKey(foodName)) {
+                selectedFoodCardMap[foodName] = SelectedFoodCardHolder(
+                    selectedDate = foodCard.expiryDate ?: "Haltbar bis",
+                    quantity = "${foodCard.quantity} ${Converters.fromUnitEnum(foodCard.unit)}"
+                )
+            }
         }
 
-        // Log des finalen Mappings
-        Log.d("StockFoodCardAdapter", "Final selectedFoodCardMap: $selectedFoodCardMap")
-
-        // Log für aktualisierte Daten
-        Log.d("StockFoodCardAdapter", "Updated foodCardSet:")
-        newFoodSet.forEach { item ->
-            Log.d(
-                "StockFoodCardAdapter",
-                "Item: ID=${item.foodCard.id}, Name=${item.foodLocal.name}, Quantity=${item.foodCard.quantity}, Unit=${item.foodCard.unit}"
-            )
-        }
-
-        // Benachrichtigung an den RecyclerView
         notifyDataSetChanged()
-        Log.d("StockFoodCardAdapter", "Data update complete. Adapter notified.")
     }
 
 

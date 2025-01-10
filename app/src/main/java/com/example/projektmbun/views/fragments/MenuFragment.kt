@@ -144,6 +144,15 @@ class MenuFragment : Fragment() {
                 expiryDateMenuAdapter.updateData(foodCardsWithExpiryDate)
                 // Alle aktiven Routines
                 routineMenuAdapter.updateData(routines)
+
+                binding.leererVorratPlaceholder.visibility =
+                    if (foodCardWithDetails.isEmpty()) View.VISIBLE else View.GONE
+
+                binding.leereHaltbarkeitPlaceholder.visibility =
+                    if (foodCardsWithExpiryDate.isEmpty()) View.VISIBLE else View.GONE
+
+                binding.leereRoutinePlaceholder.visibility =
+                    if (routines.isEmpty()) View.VISIBLE else View.GONE
             }
         }
     }

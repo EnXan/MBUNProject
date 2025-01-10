@@ -151,8 +151,31 @@ class RecipeDetailsFragment : Fragment() {
         lifecycleScope.launch {
             val updatedIngredientsAmount = ingredients.map { ingredient ->
                 val newAmount = when (ingredient.unit) {
-                    UnitsEnum.STUECK, UnitsEnum.UNBEKANNT -> ingredient.amount ?: 0.0 // Stück bleibt unverändert
-                    else -> (ingredient.amount ?: 0.0) * count // Normal multiplizieren
+                    // Nur NACH_GESCHMACK bleibt unverändert
+                    UnitsEnum.NACH_GESCHMACK -> ingredient.amount ?: 0.0
+
+                    // Prise wird auch hochskaliert, aber später speziell behandelt
+                    UnitsEnum.PRISE -> (ingredient.amount ?: 0.0) * count
+
+                    // Units die normal skaliert werden
+                    UnitsEnum.GRAMM,
+                    UnitsEnum.KILOGRAMM,
+                    UnitsEnum.MILLILITER,
+                    UnitsEnum.LITER,
+                    UnitsEnum.TEELOEFEL,
+                    UnitsEnum.ESSLOEFEL,
+                    UnitsEnum.TASSE,
+                    UnitsEnum.GLAS,
+                    UnitsEnum.BECHER -> (ingredient.amount ?: 0.0) * count
+
+                    // Stückzahlen werden aufgerundet
+                    UnitsEnum.STUECK,
+                    UnitsEnum.ZEHE,
+                    UnitsEnum.PACKUNG,
+                    UnitsEnum.DOSE -> kotlin.math.ceil((ingredient.amount ?: 0.0) * count)
+
+                    // Fallback für unbekannte Units
+                    UnitsEnum.UNBEKANNT -> ingredient.amount ?: 0.0
                 }
                 ingredient.copy(amount = newAmount)
             }
@@ -162,10 +185,47 @@ class RecipeDetailsFragment : Fragment() {
             }
 
             val uiIngredients = updatedIngredientsWithAvailability.map { (ingredient, isAvailable) ->
-                val (displayAmount, displayUnit) = ingredient.unit.convertToLarger(
-                    ingredient.unit.convertToBase(ingredient.amount ?: 0.0)
-                )
-                ingredient.copy(amount = displayAmount, unit = displayUnit) to isAvailable
+                // Konvertiere zu größerer Einheit wenn möglich und sinnvoll
+                val (displayAmount, displayUnit) = when (ingredient.unit) {
+                    // NACH_GESCHMACK und UNBEKANNT bleiben unverändert
+                    UnitsEnum.NACH_GESCHMACK,
+                    UnitsEnum.UNBEKANNT -> ingredient.amount to ingredient.unit
+
+                    // Prise wird gerundet auf ganze Zahlen angezeigt
+                    UnitsEnum.PRISE -> kotlin.math.round(ingredient.amount ?: 0.0) to ingredient.unit
+
+                    // Für diese Units keine Konvertierung, aber normale Anzeige
+                    UnitsEnum.STUECK,
+                    UnitsEnum.ZEHE,
+                    UnitsEnum.PACKUNG,
+                    UnitsEnum.DOSE -> ingredient.amount to ingredient.unit
+
+                    // Für diese Units Konvertierung wenn sinnvoll
+                    UnitsEnum.GRAMM,
+                    UnitsEnum.KILOGRAMM,
+                    UnitsEnum.MILLILITER,
+                    UnitsEnum.LITER -> ingredient.unit.convertToLarger(
+                        ingredient.unit.convertToBase(ingredient.amount ?: 0.0)
+                    )
+
+                    // Volumeneinheiten bleiben wie sie sind
+                    UnitsEnum.TEELOEFEL,
+                    UnitsEnum.ESSLOEFEL,
+                    UnitsEnum.TASSE,
+                    UnitsEnum.GLAS,
+                    UnitsEnum.BECHER -> ingredient.amount to ingredient.unit
+                }
+
+                // Runde display amount auf maximal 2 Nachkommastellen
+                val roundedDisplayAmount = when {
+                    displayAmount == null -> null
+                    // Für Prise immer ganze Zahlen
+                    displayUnit == UnitsEnum.PRISE -> displayAmount.toInt().toDouble()
+                    displayAmount % 1.0 == 0.0 -> displayAmount // Ganze Zahlen nicht runden
+                    else -> kotlin.math.round(displayAmount * 100) / 100.0 // Auf 2 Nachkommastellen runden
+                }
+
+                ingredient.copy(amount = roundedDisplayAmount, unit = displayUnit) to isAvailable
             }
 
             withContext(Dispatchers.Main) {

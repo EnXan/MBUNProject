@@ -93,7 +93,7 @@ class RecipeAdapter(
         return when {
             recipe.vegan -> "Vegan"
             recipe.vegetarian -> "Vegetarisch"
-            recipe.pescetarian -> "Pescetarisch"
+            recipe.pescetarian -> "Pesketarisch"
             recipe.dairyFree -> "Laktosefrei"
             recipe.glutenFree -> "Glutenfrei"
             else -> "Standard"
