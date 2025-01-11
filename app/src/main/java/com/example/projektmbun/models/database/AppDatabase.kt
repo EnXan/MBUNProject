@@ -24,6 +24,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.realtime.channel
 import java.util.concurrent.Executors
+import androidx.room.migration.Migration
 
 
 val supabase = createSupabaseClient(
@@ -45,7 +46,7 @@ val supabase = createSupabaseClient(
         FoodCard::class,
         Routine::class, Stock::class
     ],
-    version = 2
+    version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
 

@@ -14,6 +14,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 /**
@@ -210,23 +212,45 @@ class RoutineController(
     }
 
     suspend fun executeRoutineIfDueToday(routine: Routine) {
-        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) // Passe das Format an
-        val today = formatter.format(Calendar.getInstance().time)
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        val today = LocalDate.now().format(formatter)
 
         if (routine.startDate == today || isRoutineDue(routine.startDate, routine.rhythm)) {
             transferFoodCardsToStock(routine)
-            Log.d("RoutineController", "Routine ${routine.name} wurde heute ausgeführt")
+            // Sicherstellen, dass die ID nicht null ist
+            println("Routine ist: $routine")
+            if (routine.id != null) {
+                // Explizites Update des lastExecutionDate
+                routineDao.updateLastExecutionDate(routine.id, today)
+                println("Routine ${routine.name} wurde heute ausgeführt")
+            }
         } else {
-            Log.d("RoutineController", "Routine ${routine.name} ist nicht fällig")
+            println("Routine ${routine.name} ist nicht fällig")
         }
     }
 
 
     private suspend fun transferFoodCardsToStock(routine: Routine) {
-        val foodCards = foodCardDao.getFoodCardsByRoutineId(routine.id!!)
+        val routineId = routine.id
+        if (routineId == null) {
+            Log.e("RoutineController", "Routine ID is null. Cannot transfer FoodCards.")
+            return
+        }
+
+        val foodCards = foodCardDao.getFoodCardsByRoutineId(routineId)
+        if (foodCards.isEmpty()) {
+            Log.d("RoutineController", "No FoodCards found for Routine ${routine.name}")
+            return
+        }
+
         foodCards.forEach { foodCard ->
-            foodCardDao.updateFoodCardStockIdByFoodCardId(foodCard.id!!, stockId = 1)
-            Log.d("RoutineController", "Transferred FoodCard ${foodCard.id} from Routine ${routine.name} to Stock")
+            val foodCardId = foodCard.id
+            if (foodCardId != null) {
+                foodCardDao.updateFoodCardStockIdByFoodCardId(foodCardId, stockId = 1)
+                Log.d("RoutineController", "Transferred FoodCard $foodCardId from Routine ${routine.name} to Stock")
+            } else {
+                Log.e("RoutineController", "FoodCard ID is null. Skipping transfer.")
+            }
         }
     }
 }

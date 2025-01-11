@@ -35,6 +35,15 @@ interface RoutineDao {
     suspend fun getRoutinesByName(name: String): List<Routine>
 
     /**
+     * Update the lastExecutionDate of a routine.
+     * @param routineId the id of the routine to update.
+     * @param date the new date to set as lastExecutionDate.
+     * @return number of rows updated `Int`.
+     */
+    @Query("UPDATE routine SET lastExecutionDate = :date WHERE id = :routineId")
+    suspend fun updateLastExecutionDate(routineId: Int, date: String): Int
+
+    /**
      * Get all active routines.
      * @return a list of all active routines or empty list if no routines are found `List<Routine>`.
      */

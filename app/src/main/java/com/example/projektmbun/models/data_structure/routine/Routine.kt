@@ -22,4 +22,5 @@ data class Routine(
     val startDate: String,
     val rhythm: String,
     var isActive: Boolean,
+    var lastExecutionDate: String? = null
 )

@@ -16,6 +16,10 @@ android {
     namespace = "com.example.projektmbun"
     compileSdk = 35
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     defaultConfig {
 
         ksp {
