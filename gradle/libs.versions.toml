@@ -46,6 +46,8 @@ mockitoAndroidVersion = "5.14.2"
 mockitoCore = "5.14.2"
 mockitoInline = "5.14.2"
 mockitoKotlin = "5.4.0"
+mockk = "1.13.2"
+mockkAndroid = "1.13.2"
 navigationFragmentKtx = "2.8.3"
 navigationSafeArgsGradlePlugin = "2.8.4"
 okhttp = "4.9.3"
@@ -56,6 +58,7 @@ robolectricVersion = "4.9"
 roomVersion = "2.6.1"
 junitJupiter = "5.11.3"
 rules = "1.6.1"
+rulesVersion = "1.4.0"
 runner = "1.6.2"
 squareupRetrofit = "(insert latest version)"
 turbine = "1.2.0"
@@ -79,6 +82,7 @@ androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "emoji2" }
 androidx-emoji2-bundled = { module = "androidx.emoji2:emoji2-bundled", version.ref = "emoji2Bundled" }
 androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "androidxTestEspressoEspressoCore2" }
 androidx-espresso-core-v340 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "androidxTestEspressoEspressoCore2" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 androidx-junit-v113 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 androidx-junit-v115 = { module = "androidx.test.ext:junit", version.ref = "androidxJunitVersion" }
@@ -89,6 +93,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
 androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
+androidx-rules-v140 = { module = "androidx.test:rules", version.ref = "rulesVersion" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-test-espresso-espresso-core-v351-x2 = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspressoEspressoCore2" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
@@ -135,6 +140,8 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 mockito-mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroidVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 retrofit-v290 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

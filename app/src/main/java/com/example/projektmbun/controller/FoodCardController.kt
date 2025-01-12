@@ -1,7 +1,9 @@
 package com.example.projektmbun.controller
 
 import android.database.sqlite.SQLiteConstraintException
+import android.database.sqlite.SQLiteException
 import android.util.Log
+import com.example.projektmbun.controller.interfaces.IFoodCardController
 import com.example.projektmbun.exceptions.FoodCardCreationException
 import com.example.projektmbun.exceptions.FoodCardUpdateException
 import com.example.projektmbun.models.cloud.service.FoodService
@@ -23,16 +25,17 @@ import java.time.format.DateTimeFormatter
 class FoodCardController(
     private val foodCardDao: FoodCardDao,
     private val foodService: FoodService
-) {
+) : IFoodCardController {
 
     /**
      * Adds a new food card to the local database.
      * Ensures the associated food item exists in Supabase before adding the card.
      * @param foodCard The food card to add.
+     * @return foodCardId
      * @throws FoodCardCreationException if the associated food item does not exist or if the creation fails.
      */
-    suspend fun addFoodCard(foodCard: FoodCard) {
-        withContext(Dispatchers.IO) {
+    override suspend fun addFoodCard(foodCard: FoodCard): Int {
+        return withContext(Dispatchers.IO) {
             try {
                 // Check if the associated food exists in Supabase
                 val foodExists = foodService.getFoodByName(foodCard.foodId).isNotEmpty()
@@ -45,7 +48,11 @@ class FoodCardController(
                 if (createdFoodCardId <= 0) {
                     throw FoodCardCreationException("Failed to create FoodCard: Invalid Id returned.")
                 }
+
+                createdFoodCardId  // Return the created ID
             } catch (e: SQLiteConstraintException) {
+                println("Database constraint violation: ${e.message} and with foodCard: $foodCard")
+                Log.e("FoodCardController", "Database constraint violation: ${e.message}")
                 throw FoodCardCreationException("FoodCard creation failed due to a database constraint.")
             } catch (e: Exception) {
                 Log.e("FoodCardController", "Unexpected error: ${e.localizedMessage}", e)
@@ -60,7 +67,7 @@ class FoodCardController(
      * @throws IllegalArgumentException if the ID is invalid.
      * @throws Exception if the deletion fails.
      */
-    suspend fun deleteFoodCardById(foodCardId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun deleteFoodCardById(foodCardId: Int) = withContext(Dispatchers.IO) {
         if (foodCardId <= 0) {
             throw IllegalArgumentException("Invalid FoodCard ID: $foodCardId")
         }
@@ -76,11 +83,33 @@ class FoodCardController(
         }
     }
 
+    override suspend fun addFoodCardToStock(foodCard: FoodCard, stockId: Int?): Long? {
+
+        val updatedFoodCard = foodCard.copy(isActive = true, stockId = stockId)
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val result = foodCardDao.insertFoodCard(updatedFoodCard)
+                Log.d("InsertFoodCard", "Result: $result")
+                result
+            } catch (e: SQLiteConstraintException) {
+                Log.e("UpdateError", "SQLiteConstraintException: ${e.message}. FoodCard: $updatedFoodCard, StockID: $stockId")
+                null
+            } catch (e: SQLiteException) {
+                Log.e("UpdateError", "SQLiteConstraintException: ${e.message}. FoodCard: $updatedFoodCard, StockID: $stockId")
+                null
+            } catch (e: Exception) {
+                Log.e("UpdateError", "SQLiteConstraintException: ${e.message}. FoodCard: $updatedFoodCard, StockID: $stockId")
+                null
+            }
+        }
+    }
+
     /**
      * Retrieves all food cards with their associated food details from Supabase.
      * @return A list of `FoodCardWithDetails` objects.
      */
-    suspend fun getFoodCardsWithDetails(): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
+    override suspend fun getFoodCardsWithDetails(): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
         try {
             // Fetch all FoodCards from the local database
             val foodCards = foodCardDao.getAllFoodCards()
@@ -117,7 +146,7 @@ class FoodCardController(
      * @throws IllegalArgumentException if the expiry date is not valid.
      * @throws FoodCardUpdateException if the update fails.
      */
-    suspend fun updateExpiryDateByFoodCardId(foodCardId: Int, newExpiryDate: String) {
+    override suspend fun updateExpiryDateByFoodCardId(foodCardId: Int, newExpiryDate: String) {
         if (!isValidGermanDate(newExpiryDate)) {
             throw IllegalArgumentException("Ungültiges Datum: $newExpiryDate")
         }
@@ -140,7 +169,7 @@ class FoodCardController(
      * @param routineId The ID of the routine.
      * @return A list of `FoodCardWithDetails` objects containing FoodCards and their associated Food details.
      */
-    suspend fun getFoodCardsByRoutineId(routineId: Int): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
+    override suspend fun getFoodCardsByRoutineId(routineId: Int): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
         try {
             // 1. Fetch FoodCards associated with the Routine ID from the local database
             val foodCards = foodCardDao.getFoodCardsByRoutineId(routineId)
@@ -166,7 +195,7 @@ class FoodCardController(
      * Retrieves all FoodCards that are currently in stock, along with their Food details from Supabase.
      * @return A list of `FoodCardWithDetails` objects.
      */
-    suspend fun getFoodCardsInStock(): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
+    override suspend fun getFoodCardsInStock(): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
         try {
             val foodCards = foodCardDao.getFoodCardsInStock()
             val foodIds = foodCards.map { it.foodId }
@@ -193,7 +222,7 @@ class FoodCardController(
      * @param query The search query for the Food name.
      * @return A list of `FoodCardWithDetails` objects.
      */
-    suspend fun getFoodCardsByName(query: String): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
+    override suspend fun getFoodCardsByName(query: String): List<FoodCardWithDetails> = withContext(Dispatchers.IO) {
         try {
             // 1. Fetch all FoodCards from the local database
             val foodCards = foodCardDao.getAllFoodCards()
@@ -218,7 +247,7 @@ class FoodCardController(
      * @throws IllegalArgumentException if the ID is invalid.
      * @throws Exception if the update fails.
      */
-    suspend fun removeFoodCardFromStock(foodCardId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun removeFoodCardFromStock(foodCardId: Int) = withContext(Dispatchers.IO) {
         if (foodCardId <= 0) {
             throw IllegalArgumentException("Invalid FoodCard ID: $foodCardId")
         }

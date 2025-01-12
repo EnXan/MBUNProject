@@ -15,9 +15,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
+import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.RoutineController
-import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.databinding.ItemFoodBinding
+import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.local.daos.FoodCardDao
 import com.example.projektmbun.models.local.daos.RoutineDao
 import com.example.projektmbun.models.local.daos.StockDao
@@ -65,10 +66,10 @@ class FoodAdapter(private var foodLocalSet: List<FoodLocal>,
     //All DAOs needed
     private var foodCardDao: FoodCardDao = AppDatabase.getDatabase(context).foodCardDao()
     private var routineDao: RoutineDao = AppDatabase.getDatabase(context).routineDao()
-    private var stockDao: StockDao = AppDatabase.getDatabase(context).stockDao()
 
-    //All controllers needed
-    private var stockController: StockController = StockController(stockDao, foodCardDao)
+    private var foodService: FoodService = FoodService()
+
+    private var foodCardController: FoodCardController = FoodCardController(foodCardDao, foodService)
     private var routineController: RoutineController = RoutineController(routineDao, foodCardDao)
 
     /**
@@ -211,7 +212,7 @@ class FoodAdapter(private var foodLocalSet: List<FoodLocal>,
                     try {
                         if (!showFinishButton) {
                             foodCard.stockId = stockId
-                            stockController.addFoodCardToStock(foodCard, stockId)
+                            foodCardController.addFoodCardToStock(foodCard, stockId)
                         } else {
                             foodCard.routineId = routineId
                             routineController.addFoodCardToRoutine(foodCard, routineId)

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
-import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.databinding.FragmentStockListBinding
 import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.local.daos.FoodCardDao
@@ -38,7 +37,6 @@ class StockListFragment : Fragment() {
     private lateinit var stockFoodCardListAdapter: StockFoodCardListAdapter
     private lateinit var closeButton: LinearLayout
     private lateinit var stockDao: StockDao
-    private lateinit var stockController: StockController
     private lateinit var foodCounterButton: Button
     private lateinit var foodService: FoodService
 
@@ -54,7 +52,6 @@ class StockListFragment : Fragment() {
         foodCardController = FoodCardController(foodCardDao, foodService)
 
         stockDao = AppDatabase.getDatabase(requireContext()).stockDao()
-        stockController = StockController(stockDao, foodCardDao)
 
         binding.searchEditText.searchEditText.hint = "Lebensmittel im Vorrat suchen..."
 

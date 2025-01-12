@@ -57,12 +57,4 @@ class RecipeValidator(
 
         return isValid
     }
-
-    fun validateIngredientExistence(): Boolean {
-        return recipeTempDataHandler.getAllIngredients().isNotEmpty()
-    }
-
-    fun validateInstructionExistence(): Boolean {
-        return recipeTempDataHandler.getAllInstructions().isNotEmpty()
-    }
 }

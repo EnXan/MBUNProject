@@ -124,7 +124,18 @@ class RecipeService {
     }
 
 
-
+    suspend fun removeRecipeByTitle(title: String) = withContext(Dispatchers.IO) {
+        try {
+            supabase.from(recipesTable)
+                .delete {
+                    filter {
+                    eq("title", title)
+                    }
+                }
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 
 
     suspend fun getRecipeById(recipeId: Int): Recipe? = withContext(Dispatchers.IO) {

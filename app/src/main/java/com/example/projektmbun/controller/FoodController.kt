@@ -1,5 +1,6 @@
 package com.example.projektmbun.controller
 
+import com.example.projektmbun.controller.interfaces.IFoodController
 import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.local.daos.FoodDao
@@ -8,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class FoodController(private val foodService: FoodService, private val foodDao: FoodDao) {
+class FoodController(private val foodService: FoodService, private val foodDao: FoodDao): IFoodController {
 
 
 
@@ -18,7 +19,7 @@ class FoodController(private val foodService: FoodService, private val foodDao: 
      * @param name The name of the food item to search for.
      * @return A list of matching food items or an empty list if none are found.
      */
-    suspend fun searchFoodByName(name: String): List<FoodLocal> = withContext(Dispatchers.IO) {
+    override suspend fun searchFoodByName(name: String): List<FoodLocal> = withContext(Dispatchers.IO) {
         if (name.isBlank()) {
             return@withContext emptyList()
         }
@@ -34,7 +35,7 @@ class FoodController(private val foodService: FoodService, private val foodDao: 
      * Fetch all food items.
      * @return A list of all food items or an empty list if none are found.
      */
-    suspend fun getAllFood(): Flow<List<FoodLocal>> = withContext(Dispatchers.IO) {
+    override suspend fun getAllFood(): Flow<List<FoodLocal>> = withContext(Dispatchers.IO) {
         try {
             foodDao.getAllFood()
         } catch (e: Exception) {
@@ -47,7 +48,7 @@ class FoodController(private val foodService: FoodService, private val foodDao: 
      * @param category The food category to filter by.
      * @return A list of matching food items or an empty list if none are found.
      */
-    suspend fun getFoodByCategory(category: FoodCategoryEnum): List<FoodLocal> = withContext(Dispatchers.IO) {
+    override suspend fun getFoodByCategory(category: FoodCategoryEnum): List<FoodLocal> = withContext(Dispatchers.IO) {
             try {
                 foodDao.getFoodByCategory(category)
             } catch (e: Exception) {

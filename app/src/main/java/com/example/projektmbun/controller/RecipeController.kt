@@ -1,6 +1,7 @@
 package com.example.projektmbun.controller
 
 import android.util.Log
+import com.example.projektmbun.controller.interfaces.IRecipeController
 import com.example.projektmbun.models.cloud.service.RecipeService
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
@@ -20,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.similarity.LevenshteinDistance
 
-class RecipeController(private val recipeService: RecipeService) {
+class RecipeController(private val recipeService: RecipeService): IRecipeController {
 
     /**
      * Adds a recipe to the database with all its details.
@@ -29,7 +30,7 @@ class RecipeController(private val recipeService: RecipeService) {
      * @param instructions List of temporary instructions.
      * @return Boolean indicating success or failure.
      */
-    suspend fun addRecipeWithDetails(
+    override suspend fun addRecipeWithDetails(
         recipe: TemporaryRecipe,
         ingredients: List<TemporaryIngredient>,
         instructions: List<TemporaryInstruction>,
@@ -126,14 +127,20 @@ class RecipeController(private val recipeService: RecipeService) {
 
 
 
-
+    override suspend fun removeRecipeByTitle(title: String) {
+        try {
+            recipeService.removeRecipeByTitle(title)
+        } catch (e: Exception) {
+            Log.e("RecipeController", "Fehler beim Entfernen des Rezepts: ${e.localizedMessage}")
+        }
+    }
 
     /**
      * Retrieves a recipe by its ID.
      * @param recipeId ID of the recipe.
      * @return The recipe or null if not found.
      */
-    suspend fun getRecipeById(recipeId: Int): Recipe? = withContext(Dispatchers.IO) {
+    override suspend fun getRecipeById(recipeId: Int): Recipe? = withContext(Dispatchers.IO) {
         if (recipeId <= 0) {
             throw IllegalArgumentException("Ungültige Rezept-ID: $recipeId")
         }
@@ -148,11 +155,11 @@ class RecipeController(private val recipeService: RecipeService) {
 
     /**
      * Searches for recipes by their title.
-     * @param title The title to search for.
+     * @param query The title to search for.
      * @return List of matching recipes.
      */
-    suspend fun getRecipesByTitle(title: String): List<Recipe> = withContext(Dispatchers.IO) {
-        if (title.isBlank()) {
+    override suspend fun getRecipesByTitle(query: String): List<Recipe> = withContext(Dispatchers.IO) {
+        if (query.isBlank()) {
             return@withContext emptyList()
         }
 
@@ -165,7 +172,7 @@ class RecipeController(private val recipeService: RecipeService) {
             val levenshtein = LevenshteinDistance()
 
             val matchedRecipes = allRecipes.filter { recipe ->
-                val normalizedQuery = title.lowercase()
+                val normalizedQuery = query.lowercase()
                 val normalizedTitle = recipe.title.lowercase()
 
                 // Teilstring-Suche oder Levenshtein-Distanz prüfen
@@ -185,7 +192,7 @@ class RecipeController(private val recipeService: RecipeService) {
      * Retrieves all available recipes.
      * @return List of recipes.
      */
-    suspend fun getAllAvailableRecipes(): List<Recipe> = withContext(Dispatchers.IO) {
+    override suspend fun getAllAvailableRecipes(): List<Recipe> = withContext(Dispatchers.IO) {
         try {
             recipeService.getAllAvailableRecipes()
         } catch (e: Exception) {
@@ -200,9 +207,9 @@ class RecipeController(private val recipeService: RecipeService) {
      * @param maximumMissingIngredients Maximum number of allowed missing ingredients per recipe.
      * @return List of filtered recipes sorted by matching ingredients.
      */
-    suspend fun getFilteredRecipes(
+    override suspend fun getFilteredRecipes(
         foodCards: List<FoodCard>,
-        maximumMissingIngredients: Int = 3 // 2
+        maximumMissingIngredients: Int
     ): List<Recipe> = withContext(Dispatchers.IO) {
         val recipes = getAllAvailableRecipes()
 
@@ -346,11 +353,11 @@ class RecipeController(private val recipeService: RecipeService) {
 
 
 
-    suspend fun getIngredientsByRecipeId(recipeId: Int): List<Ingredient> {
+    override suspend fun getIngredientsByRecipeId(recipeId: Int): List<Ingredient> {
         return recipeService.getIngredientsByRecipeId(recipeId)
     }
 
-    suspend fun getInstructionsByRecipeId(recipeId: Int): List<Instructions> {
+    override suspend fun getInstructionsByRecipeId(recipeId: Int): List<Instructions> {
         return recipeService.getInstructionsByRecipeId(recipeId)
     }
 

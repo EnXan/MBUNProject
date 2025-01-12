@@ -1,6 +1,7 @@
 package com.example.projektmbun.controller
 
 import android.util.Log
+import com.example.projektmbun.controller.interfaces.IRoutineController
 import com.example.projektmbun.exceptions.RoutineDeletionException
 import com.example.projektmbun.exceptions.RoutineNotUpdatedException
 import com.example.projektmbun.models.local.daos.FoodCardDao
@@ -29,14 +30,14 @@ import java.time.format.DateTimeFormatter
 class RoutineController(
     private val routineDao: RoutineDao,
     private val foodCardDao: FoodCardDao,
-) {
+): IRoutineController {
 
     /**
      * Get all routines.
      * @return Mutable list of all routines or empty mutable list `MutableList<Routine>`.
      * @throws Exception if an error occurs while fetching the routines.
      */
-    suspend fun getAllRoutines(): MutableList<Routine> = withContext(Dispatchers.IO) {
+    override suspend fun getAllRoutines(): MutableList<Routine> = withContext(Dispatchers.IO) {
         try {
             routineDao.getAllRoutines().toMutableList()
         } catch (e: Exception) {
@@ -56,7 +57,7 @@ class RoutineController(
      * @throws RoutineNotUpdatedException if no rows were updated.
      * @throws Exception if an error occurs while updating the isActive status.
      */
-    suspend fun updateRoutineIsActive(id: Int, isActive: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun updateRoutineIsActive(id: Int, isActive: Boolean) = withContext(Dispatchers.IO) {
         try {
             val rowsUpdated = routineDao.updateIsActive(id, isActive)
 
@@ -74,7 +75,7 @@ class RoutineController(
      * @return List of all active routines or empty list `List<Routine>`.
      * @throws Exception if an error occurs while fetching the active routines.
      */
-    suspend fun getAllActiveRoutines(): List<Routine> = withContext(Dispatchers.IO) {
+    override suspend fun getAllActiveRoutines(): List<Routine> = withContext(Dispatchers.IO) {
         try {
             routineDao.getAllActiveRoutines()
         } catch (e: Exception) {
@@ -88,7 +89,7 @@ class RoutineController(
      * @param routine the routine to add or update.
      * @throws Exception if an error occurs while adding or updating the routine.
      */
-    suspend fun addOrUpdateRoutine(routine: Routine) = withContext(Dispatchers.IO) {
+    override suspend fun addOrUpdateRoutine(routine: Routine) = withContext(Dispatchers.IO) {
         try {
             routineDao.upsertRoutine(routine)
         } catch (e: Exception) {
@@ -103,7 +104,7 @@ class RoutineController(
      * @throws RoutineDeletionException if an error occurs while deleting the routine.
      * @throws Exception if an unexpected error occurs.
      */
-    suspend fun deleteRoutine(routineId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun deleteRoutine(routineId: Int) = withContext(Dispatchers.IO) {
         try {
             val deletedRows = routineDao.deleteRoutineById(routineId)
             if (deletedRows == 0) {
@@ -121,7 +122,7 @@ class RoutineController(
      * @param routineId the id of the routine to add the food card to.
      * @throws Exception if an error occurs while adding the food card to the routine.
      */
-    suspend fun addFoodCardToRoutine(foodCard: FoodCard, routineId: Int?) = withContext(Dispatchers.IO) {
+    override suspend fun addFoodCardToRoutine(foodCard: FoodCard, routineId: Int?) = withContext(Dispatchers.IO) {
 
         //Change food card properties to match the routine requirements
         val updatedFoodCard = foodCard.copy(isActive = true, routineId = routineId)
@@ -142,7 +143,7 @@ class RoutineController(
      * @throws NullPointerException if the food card id is null.
      * @throws Exception if an error occurs while removing the food card to the routine.
      */
-    suspend fun removeFoodCardFromRoutine(foodCard: FoodCardWithDetails) = withContext(Dispatchers.IO) {
+    override suspend fun removeFoodCardFromRoutine(foodCard: FoodCardWithDetails) = withContext(Dispatchers.IO) {
         requireNotNull(foodCard.foodCard.id) { "FoodCard id must not be null" }
 
         try {
@@ -181,7 +182,7 @@ class RoutineController(
         return foodCard.routineId == null && foodCard.stockId == null
     }
 
-    suspend fun checkAndExecuteRoutines() = withContext(Dispatchers.IO) {
+    override suspend fun checkAndExecuteRoutines() = withContext(Dispatchers.IO) {
         val activeRoutines = getAllActiveRoutines()
 
         activeRoutines.forEach { routine ->
@@ -211,7 +212,7 @@ class RoutineController(
         }
     }
 
-    suspend fun executeRoutineIfDueToday(routine: Routine) {
+    override suspend fun executeRoutineIfDueToday(routine: Routine) {
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
         val today = LocalDate.now().format(formatter)
 

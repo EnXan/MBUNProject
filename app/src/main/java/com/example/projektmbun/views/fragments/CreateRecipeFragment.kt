@@ -516,14 +516,15 @@ class CreateRecipeFragment : Fragment() {
             )
 
             if (success) {
-                showToast("Rezept erfolgreich gespeichert!")
+                // Direkter Toast-Aufruf
+                Toast.makeText(requireContext(), "Rezept erfolgreich gespeichert!", Toast.LENGTH_LONG).show()
                 recipeTempDataHandler.clearAll()
             } else {
-                showToast("Fehler beim Speichern des Rezepts.")
+                Toast.makeText(requireContext(), "Fehler beim Speichern des Rezepts.", Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
             Log.e("CreateRecipeFragment", "Fehler beim Speichern des Rezepts: ${e.localizedMessage}")
-            showToast("Fehler beim Speichern des Rezepts.")
+            Toast.makeText(requireContext(), "Fehler beim Speichern des Rezepts.", Toast.LENGTH_LONG).show()
         }
     }
 

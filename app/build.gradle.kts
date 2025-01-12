@@ -65,7 +65,15 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += listOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/NOTICE.md",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE"
+            )
         }
     }
 
@@ -98,6 +106,8 @@ dependencies {
     implementation (libs.commons.text)
     implementation(libs.squareup.retrofit)
     implementation(libs.retrofit.v290)
+    androidTestImplementation(libs.androidx.rules.v140)
+    androidTestImplementation(libs.androidx.espresso.intents)
     implementation (libs.flexbox)
     implementation(libs.materialnumberpicker)
     testImplementation(libs.turbine)
@@ -109,6 +119,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit.v115)
     implementation (libs.fab)
     implementation (libs.androidx.activity.ktx)
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
     implementation (libs.androidx.fragment.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

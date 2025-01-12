@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projektmbun.R
 import com.example.projektmbun.controller.FoodCardController
 import com.example.projektmbun.controller.FoodController
-import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.databinding.FragmentStockBinding
 import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.local.daos.FoodCardDao
@@ -51,7 +50,6 @@ class StockFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var foodAdapter: FoodAdapter
     private lateinit var stockDao: StockDao
-    private lateinit var stockController: StockController
     private lateinit var foodCardDao: FoodCardDao
     private lateinit var foodDao: FoodDao
     private lateinit var foodCardController: FoodCardController
@@ -82,7 +80,6 @@ class StockFragment : Fragment() {
         foodCardController = FoodCardController(foodCardDao, foodService)
 
         stockDao = AppDatabase.getDatabase(requireContext()).stockDao()
-        stockController = StockController(stockDao, foodCardDao)
 
 
         foodAdapter = FoodAdapter(emptyList(), requireContext(), showFinishButton, routineId, STOCK_ID)

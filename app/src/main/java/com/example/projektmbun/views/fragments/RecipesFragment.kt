@@ -22,7 +22,9 @@ import com.example.projektmbun.utils.addSearchListener
 import com.example.projektmbun.views.adapters.RecipeAdapter
 import com.github.clans.fab.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -30,6 +32,7 @@ class RecipesFragment : Fragment() {
 
     private var _binding: FragmentRecipesBinding? = null
     private val binding get() = _binding!!
+    private var searchJob: Job? = null
     private lateinit var recipeController: RecipeController
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var foodCardDao: FoodCardDao
@@ -66,11 +69,16 @@ class RecipesFragment : Fragment() {
             toggleFilter()
         }
 
+        // Modifizieren Sie den searchListener
         binding.searchBar.searchEditText.addSearchListener(lifecycleScope) { query ->
-            lifecycleScope.launch(Dispatchers.IO) {
+            searchJob?.cancel() // Cancel previous job if exists
+            searchJob = lifecycleScope.launch(Dispatchers.IO) {
+                if (!isActive) return@launch // Check if still active
                 val results = recipeController.getRecipesByTitle(query)
                 withContext(Dispatchers.Main) {
-                    updateRecyclerView(results)
+                    _binding?.let { // Null-Safety-Check
+                        updateRecyclerView(results)
+                    }
                 }
             }
         }
@@ -88,39 +96,41 @@ class RecipesFragment : Fragment() {
 
         // Lade die Rezepte basierend auf den FoodCards des Benutzers
         lifecycleScope.launch(Dispatchers.IO) {
-            val userFoodCards =
-                foodCardDao.getAllFoodCards() // Abfrage der FoodCards aus der lokalen DB
+            if (!isActive) return@launch
+            val userFoodCards = foodCardDao.getAllFoodCards()
 
             try {
                 val results = recipeController.getFilteredRecipes(userFoodCards)
                 withContext(Dispatchers.Main) {
-                    if (results.isNotEmpty()) {
-                        binding.recipeRecyclerView.visibility = View.VISIBLE
-                        binding.recipeErrorText.visibility = View.GONE
-                        updateRecyclerView(results)
-                    } else {
-                        binding.recipeRecyclerView.visibility = View.GONE
-                        binding.recipeErrorText.text = "Keine Rezepte gefunden"
-                        binding.recipeErrorText.visibility = View.VISIBLE
+                    _binding?.let { binding -> // Null-Safety-Check
+                        if (results.isNotEmpty()) {
+                            binding.recipeRecyclerView.visibility = View.VISIBLE
+                            binding.recipeErrorText.visibility = View.GONE
+                            updateRecyclerView(results)
+                        } else {
+                            binding.recipeRecyclerView.visibility = View.GONE
+                            binding.recipeErrorText.text = "Keine Rezepte gefunden"
+                            binding.recipeErrorText.visibility = View.VISIBLE
+                        }
                     }
                 }
             } catch (e: Exception) {
-                // Fehlerbehandlung: Leere Liste und Fehlermeldung anzeigen
                 withContext(Dispatchers.Main) {
-                    binding.recipeRecyclerView.visibility = View.GONE
-                    binding.recipeErrorText.text = "Ein Fehler ist aufgetreten"
-                    e.printStackTrace()
-                    binding.recipeErrorText.visibility = View.VISIBLE
+                    _binding?.let { binding -> // Null-Safety-Check
+                        binding.recipeRecyclerView.visibility = View.GONE
+                        binding.recipeErrorText.text = "Ein Fehler ist aufgetreten"
+                        binding.recipeErrorText.visibility = View.VISIBLE
+                    }
                 }
+                e.printStackTrace()
             }
         }
 
-
-
-        return view
+        return binding.root
     }
 
     override fun onDestroyView() {
+        searchJob?.cancel() // Cancel any running job
         super.onDestroyView()
         _binding = null
     }

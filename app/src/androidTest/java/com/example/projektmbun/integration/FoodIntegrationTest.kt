@@ -5,7 +5,6 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.projektmbun.controller.FoodCardController
-import com.example.projektmbun.controller.StockController
 import com.example.projektmbun.models.cloud.service.FoodService
 import com.example.projektmbun.models.data_structure.food.FoodLocal
 import com.example.projektmbun.models.data_structure.food_card.FoodCard
@@ -13,7 +12,6 @@ import com.example.projektmbun.models.data_structure.stock.Stock
 import com.example.projektmbun.models.database.AppDatabase
 import com.example.projektmbun.utils.enums.FoodCategoryEnum
 import com.example.projektmbun.utils.enums.UnitsEnum
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
@@ -23,9 +21,8 @@ import org.junit.runner.RunWith
 import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
-class AddFoodIntegrationTest {
+class  FoodIntegrationTest {
     private lateinit var db: AppDatabase
-    private lateinit var stockController: StockController
     private lateinit var foodCardController: FoodCardController
     private lateinit var foodService: FoodService
 
@@ -38,7 +35,6 @@ class AddFoodIntegrationTest {
         ).build()
 
         foodService = FoodService()
-        stockController = StockController(db.stockDao(), db.foodCardDao())
         foodCardController = FoodCardController(db.foodCardDao(), foodService)
     }
 
@@ -81,7 +77,7 @@ class AddFoodIntegrationTest {
         )
 
         // 2. Add food card to stock
-        val addedFoodCardId = stockController.addFoodCardToStock(testFoodCard, 1)
+        val addedFoodCardId = foodCardController.addFoodCardToStock(testFoodCard, 1)
         assertNotNull("Food card should be added successfully", addedFoodCardId)
 
         // 3. Verify food card exists in stock
